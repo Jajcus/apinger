@@ -4,7 +4,7 @@ Alarm Pinger v. 0.1
 
 Alarm Pinger (apinger) is a little tool which monitors various IP devices by
 simple ICMP echo requests. There are various other tools, that can do this,
-but most of them are shell o perl scripts, spawning many processes, thus much
+but most of them are shell or perl scripts, spawning many processes, thus much
 CPU-expensive, especially when one wants continuous monitoring and fast
 response on target failure.  Alarm Pinger is a single process written in C, so
 it doesn't need much CPU power even when monitoring many targets with frequent
