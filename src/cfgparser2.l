@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser2.l,v 1.4 2002/07/17 09:32:51 cvs-jajcus Exp $
+ *  $Id: cfgparser2.l,v 1.5 2002/07/17 17:56:23 cvs-jajcus Exp $
  */
 
 
@@ -72,8 +72,9 @@ DIGIT	[0-9]
 alarm		{ LOC; LOCINC; return ALARM; }
 alarms		{ LOC; LOCINC; return ALARMS; }
 avg_delay_samples	{ LOC; LOCINC; return AVG_DELAY_SAMPLES; }
-avg_loss_samples	{ LOC; LOCINC; return AVG_LOSS_SAMPLES; }
 avg_loss_delay_samples	{ LOC; LOCINC; return AVG_LOSS_DELAY_SAMPLES; }
+avg_loss_samples	{ LOC; LOCINC; return AVG_LOSS_SAMPLES; }
+command		{ LOC; LOCINC; return COMMAND; }
 debug		{ LOC; LOCINC; return DEBUG; }
 default		{ LOC; LOCINC; return DEFAULT; }
 delay		{ LOC; LOCINC; return DELAY; }
@@ -81,20 +82,26 @@ delay_high	{ LOC; LOCINC; return DELAY_HIGH; }
 delay_low	{ LOC; LOCINC; return DELAY_LOW; }
 description	{ LOC; LOCINC; return DESCRIPTION; }
 down		{ LOC; LOCINC; return DOWN; }
+false		{ LOC; LOCINC; return FALSE; }
 group		{ LOC; LOCINC; return GROUP; }
 interval	{ LOC; LOCINC; return INTERVAL; }
 loss		{ LOC; LOCINC; return LOSS; }
 mailenvfrom	{ LOC; LOCINC; return MAILENVFROM; }
+mailer		{ LOC; LOCINC; return MAILER; }
 mailfrom	{ LOC; LOCINC; return MAILFROM; }
 mailto		{ LOC; LOCINC; return MAILTO; }
+no		{ LOC; LOCINC; return NO; }
+off		{ LOC; LOCINC; return OFF; }
+on		{ LOC; LOCINC; return ON; }
 percent_high	{ LOC; LOCINC; return PERCENT_HIGH; }
 percent_low	{ LOC; LOCINC; return PERCENT_LOW; }
+pid_file	{ LOC; LOCINC; return PID_FILE; }
+pipe		{ LOC; LOCINC; return PIPE; }
 target		{ LOC; LOCINC; return TARGET; }
 time		{ LOC; LOCINC; return TIME_; }
+true		{ LOC; LOCINC; return TRUE; }
 user		{ LOC; LOCINC; return USER; }
-
-on|true|yes	{ LOC; LOCINC; yylval.i=1; return BOOLEAN; }
-off|false|no	{ LOC; LOCINC; yylval.i=0; return BOOLEAN; }
+yes		{ LOC; LOCINC; return YES; }
 
 \"[^"\n]*\"	{ LOC; LOCINC; yytext[yyleng-1]='\000'; yylval.s=yytext+1; return STRING; }
 

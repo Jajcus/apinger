@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser1.y,v 1.4 2002/07/17 09:32:51 cvs-jajcus Exp $
+ *  $Id: cfgparser1.y,v 1.5 2002/07/17 17:56:23 cvs-jajcus Exp $
  */
 
 
@@ -59,12 +59,14 @@ struct target_cfg *cur_target;
 
 %token <i> TIME
 %token <i> INTEGER
-%token <i> BOOLEAN
 %token <s> STRING
 
 %token DEBUG
 %token USER
 %token GROUP
+%token PID_FILE
+%token MAILER
+
 %token ALARM
 %token TARGET
 
@@ -73,6 +75,8 @@ struct target_cfg *cur_target;
 %token MAILTO
 %token MAILFROM
 %token MAILENVFROM
+%token COMMAND
+%token PIPE
 
 %token DOWN
 %token LOSS
@@ -93,17 +97,24 @@ struct target_cfg *cur_target;
 
 %token ERROR
 
+%token ON OFF
+%token YES NO
+%token TRUE FALSE
+
 %type <s> string
 %type <al> alarmlist
 %type <a> makealarm getdefalarm
 %type <t> maketarget getdeftarget
+%type <i> boolean
 
 %%
 
 config:	/* */
-	| DEBUG BOOLEAN { cur_config.debug=$2; }
+	| DEBUG boolean { cur_config.debug=$2; }
 	| USER string { cur_config.user=$2; }
 	| GROUP string { cur_config.group=$2; }
+	| MAILER string { cur_config.group=$2; }
+	| PID_FILE string { cur_config.group=$2; }
 	| alarm 
 	| target 
 	| config separator config
@@ -184,6 +195,12 @@ alarmcommon: /* */
 		{ cur_alarm->mailfrom=$2; }
 	| MAILENVFROM string 
 		{ cur_alarm->mailenvfrom=$2; }
+	| COMMAND ON string 
+		{ cur_alarm->command_on=$3; }
+	| COMMAND OFF string 
+		{ cur_alarm->command_off=$3; }
+	| PIPE string 
+		{ cur_alarm->pipe=$2; }
 ;
 
 
@@ -220,6 +237,14 @@ alarmlist: string
 ;
 
 string: STRING	{ $$=pool_strdup(&cur_config.pool,$1); }
+;
+
+boolean: ON { $$=1; }
+	| OFF { $$=0; }
+	| YES { $$=1; }
+	| NO { $$=0; }
+	| TRUE { $$=1; }
+	| FALSE { $$=0; }
 ;
 
 separator: '\n'

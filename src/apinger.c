@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.13 2002/07/17 09:32:51 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.14 2002/07/17 17:56:23 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -49,6 +49,8 @@
 #else
 # define assert(cond)
 #endif
+
+struct timeval operation_started;
 
 int is_alarm_on(struct target *t,struct alarm_cfg *a){
 struct alarm_list *al;
@@ -87,13 +89,163 @@ struct alarm_list *al,*pa,*na;
 	logit("Alarm '%s' not found in '%s'",a->name,t->name);
 }
 
+static char *macros_buf=NULL;
+static int macros_buf_l=0;
+const char * subst_macros(const char *string,struct target *t,struct alarm_cfg *a,int on){
+char *p;
+int nmacros=0;
+int i,sl,l,n;
+char **values;
+char ps[16],pr[16],al[16],ad[16];
+
+	if (string==NULL || string[0]=='\000') return "";
+	for(i=0;string[i]!='\000';i++){
+		if (string[i]!='%') continue;
+		nmacros++;
+		i++;
+		if (string[i]=='\000') break;
+	}
+	if (nmacros==0) return string;
+	values=(char **)malloc(sizeof(char *)*(nmacros+1));
+	assert(values!=NULL);
+	l=sl=strlen(string);
+	n=0;
+	for(i=0;i<sl;i++){
+		if (string[i]!='%') continue;
+		i++;
+		switch(string[i]){
+		case 't':
+			values[n]=t->name;
+			break;
+		case 'T':
+			values[n]=t->config->description;
+			break;
+		case 'a':
+			values[n]=a->name;
+			break;
+		case 'A':
+			switch(a->type){
+			case AL_DOWN:
+				values[n]="down";
+				break;
+			case AL_LOSS:
+				values[n]="loss";
+				break;
+			case AL_DELAY:
+				values[n]="delay";
+				break;
+			default:
+				values[n]="unknown";
+				break;
+			}
+			break;
+		case 'r':
+			switch(on){
+			case -1:
+				values[n]="alarm cancelled (config reload)";
+				break;
+			case 0:
+				values[n]="alarm cancelled";
+				break;
+			default:
+				values[n]="ALARM";
+				break;
+			}
+			break;
+		case 'p':
+			sprintf(ps,"%i",t->last_sent);
+			values[n]=ps;
+			break;
+		case 'P':
+			sprintf(pr,"%i",t->received);
+			values[n]=pr;
+			break;
+		case 'l':
+			if (t->upsent > t->config->avg_loss_delay_samples
+						+t->config->avg_loss_samples){
+				sprintf(al,"%0.1f%%",
+						100*((double)t->recently_lost)/
+							t->config->avg_loss_samples);
+				values[n]=al;
+			}
+			else values[n]="n/a";
+			break;
+		case 'd':
+			if (t->upsent > t->config->avg_loss_delay_samples
+						+t->config->avg_loss_samples){
+				sprintf(ad,"%0.2fms",t->delay_sum/t->config->avg_delay_samples);
+				values[n]=ad;
+			}
+			else values[n]="n/a";
+			break;
+		case '%':
+			values[n]="%";
+			break;
+		default:
+			values[n]="";
+			break;
+		}
+		l+=strlen(values[n])-1;
+		n++;
+	}
+	values[n]=NULL;
+	l+=2;
+	if (macros_buf == NULL){
+		macros_buf=(char *)malloc(l);
+		macros_buf_l=l;
+	}else if (macros_buf_l < l){
+		macros_buf=(char *)realloc(macros_buf,l);
+		macros_buf_l=l;
+	}
+	assert(macros_buf!=NULL);
+	p=macros_buf;
+	n=0;
+	for(i=0;i<sl;i++){
+		if (string[i]!='%'){
+			*p++=string[i];
+			continue;
+		}
+		strcpy(p,values[n]);
+		p+=strlen(values[n]);
+		n++;
+		i++;
+	}
+	free(values);
+	*p='\000';
+	return macros_buf;
+}
+
+void write_report(FILE *f,struct target *t,struct alarm_cfg *a,int on){
+time_t tm;
+	
+	tm=time(NULL);
+	fprintf(f,"%s",ctime(&tm));
+	if (on)
+		fprintf(f,"ALARM went off: %s\n",a->name);
+	else
+		fprintf(f,"alarm cancelled: %s\n",a->name);
+	fprintf(f,"Target: %s\n",t->name);
+	fprintf(f,"Description: %s\n",t->config->description);
+	fprintf(f,"Probes sent: %i\n",t->last_sent+1);
+	fprintf(f,"Replies received: %i\n",t->received);
+	fprintf(f,"Last reply received: #%i %s",t->last_received,
+			ctime(&t->last_received_tv.tv_sec));
+	if (t->received>=t->config->avg_delay_samples){
+		fprintf(f,"Recent avg. delay: %4.2fms\n",
+				t->delay_sum/t->config->avg_delay_samples);
+	}
+	if (t->upsent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
+		fprintf(f,"Recent avg. packet loss: %5.1f%%\n",
+				100*((double)t->recently_lost)/t->config->avg_loss_samples);
+	}
+}
+
 void toggle_alarm(struct target *t,struct alarm_cfg *a,int on){
 FILE *p;
 char buf[1024];
 int ret;
-time_t tm;
 char *mailto,*mailfrom,*mailenvfrom;
-
+const char *command;
 
 	if (on>0){
 		logit("ALARM: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
@@ -114,17 +266,17 @@ char *mailto,*mailfrom,*mailenvfrom;
 	mailfrom=a->mailfrom;
 	if (mailto){
 		if (mailenvfrom){
-			snprintf(buf,1024,"/usr/lib/sendmail -t -f'%s'",mailenvfrom);
+			snprintf(buf,1024,"%s -f'%s'",config->mailer,mailenvfrom);
 		}
 		else{
-			snprintf(buf,1024,"/usr/lib/sendmail");
+			snprintf(buf,1024,"%s",config->mailer);
 		}
+		debug("Popening: %s",buf);
 		p=popen(buf,"w");
 		if (!p){
-			myperror("Couldn't send mail: popen:");
+			myperror("Couldn't send mail, popen:");
 			return;
 		}
-		tm=time(NULL);
 		if (on>0)
 			fprintf(p,"Subject: ALARM: %s(%s) *** %s ***\n",
 					t->config->description,t->name,a->name);
@@ -136,26 +288,10 @@ char *mailto,*mailfrom,*mailenvfrom;
 					t->config->description,t->name,a->name);
 		fprintf(p,"To: %s\n",mailto);
 		if (mailfrom) {
-			fprintf(p,"From: Alarm Pinger <%s>\n",mailfrom);
+			fprintf(p,"From: %s\n",mailfrom);
 		}
-		fprintf(p,"\n%s",ctime(&tm));
-		if (on)
-			fprintf(p,"ALARM went off: %s\n",a->name);
-		else
-			fprintf(p,"alarm cancelled: %s\n",a->name);
-		fprintf(p,"Target: %s\n",t->name);
-		fprintf(p,"Description: %s\n",t->config->description);
-		fprintf(p,"Probes sent: %i\n",t->last_sent+1);
-		fprintf(p,"Replies received: %i\n",t->received);
-		fprintf(p,"Last reply received: %i\n",t->last_received);
-		if (t->received>=t->config->avg_delay_samples){
-			fprintf(p,"Recent avg. delay: %4.2fms\n",
-					t->delay_sum/t->config->avg_delay_samples);
-		}
-		if (t->last_sent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
-			fprintf(p,"Recent avg. packet loss: %5.1f%%\n",
-					100*((double)t->recently_lost)/t->config->avg_loss_samples);
-		}
+		fprintf(p,"\n");
+		write_report(p,t,a,on);
 		ret=pclose(p);
 		if (!WIFEXITED(ret)){
 			logit("Error while sending mail.\n");
@@ -168,14 +304,49 @@ char *mailto,*mailfrom,*mailenvfrom;
 			return;
 		}
 	}
+	if (a->pipe){
+		debug("Popening: %s",a->pipe);
+		p=popen(a->pipe,"w");
+		if (!p){
+			logit("Couldn't pipe report through %s",a->pipe);
+			myperror("popen");
+			return;
+		}
+		write_report(p,t,a,on);
+		ret=pclose(p);
+		if (!WIFEXITED(ret)){
+			logit("Error while piping report.");
+			logit("command (%s) terminated abnormally.",a->pipe);
+			return;
+		}
+		if (WEXITSTATUS(ret)!=0){
+			logit("Error while piping report.");
+			logit("command (%s) exited with status: %i",a->pipe,WEXITSTATUS(ret));
+			return;
+		}
+	}
+	if (on>1) command=a->command_on;
+	else command=a->command_off;
+	if (command){
+		command=subst_macros(command,t,a,on);
+		debug("Starting: %s",command);
+		ret=system(command);
+		if (!WIFEXITED(ret)){
+			logit("Error while piping report.");
+			logit("command (%s) terminated abnormally.",command);
+			return;
+		}
+		if (WEXITSTATUS(ret)!=0){
+			logit("Error while piping report.");
+			logit("command (%s) exited with status: %i",command,WEXITSTATUS(ret));
+			return;
+		}
+	}
 }
 
 void send_probe(struct target *t,struct timeval *cur_time){
 int i,i1;
-double avg_loss;
 char buf[100];
-struct alarm_list *al;
-struct alarm_cfg *a;
 int seq;
 
 	timeradd(cur_time,&t->interval_tv,&t->next_probe);
@@ -201,17 +372,7 @@ int seq;
 		debug("Recently lost packets: %i",t->recently_lost);
 	}
 
-	if (t->last_sent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
-		avg_loss=100*((double)t->recently_lost)/t->config->avg_loss_samples;
-		debug("Checking loss alarm conditions for %s (avg. loss: %6.3f)",t->name,avg_loss);
-		for(al=t->config->alarms;al;al=al->next){
-			a=al->alarm;
-			if (a->type!=AL_LOSS || is_alarm_on(t,a)) continue;
-			if ( avg_loss > a->p.lh.high ){
-				toggle_alarm(t,a,1);
-			}
-		}
-	}
+	t->upsent++;
 }
 
 
@@ -258,16 +419,21 @@ struct alarm_cfg *a;
 	if (!t->queue[i] && ti->seq<t->last_sent-t->config->avg_loss_delay_samples)
 		t->recently_lost--;
 	t->queue[i]=1;
-	if (t->last_sent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples)
+	
+	if (t->upsent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
 		avg_loss=100*((double)t->recently_lost)/t->config->avg_loss_samples;
-	else
+	}else
 		avg_loss=0;
 	debug("(avg. loss: %5.1f%%)",avg_loss);
-
+	
 	pa=NULL;
 	for(al=t->active_alarms;al;al=na){
 		na=al->next;
 		a=al->alarm;
+		if (a->type==AL_DOWN){
+			t->upsent=0;
+			avg_loss=0;
+		}
 		if ((a->type==AL_DOWN)
 		   || (a->type==AL_DELAY && avg_delay<a->p.lh.low)
 		   || (a->type==AL_LOSS && avg_loss<a->p.lh.low) ){
@@ -281,7 +447,11 @@ struct alarm_cfg *a;
 		switch(a->type){
 		case AL_DELAY:
 			if (t->received>t->config->avg_delay_samples && avg_delay>a->p.lh.high )
-					toggle_alarm(t,a,1);
+				toggle_alarm(t,a,1);
+			break;
+		case AL_LOSS:
+			if ( avg_loss > a->p.lh.high )
+				toggle_alarm(t,a,1);
 			break;
 		default:
 			break;
@@ -380,6 +550,7 @@ int r;
 		logit("No usable targets found, exiting");
 		exit(1);
 	}
+	gettimeofday(&operation_started,NULL);
 }
 
 void reload_config(void){
@@ -431,8 +602,12 @@ struct alarm_cfg *a;
 				a=al->alarm;
 				nal=al->next;
 				if (a->type!=AL_DOWN || is_alarm_on(t,a)) continue;
-				if (!timerisset(&t->last_received_tv)) continue;
-				timersub(&cur_time,&t->last_received_tv,&tv);
+				if (timerisset(&t->last_received_tv)){
+					timersub(&cur_time,&t->last_received_tv,&tv);
+				}
+				else {
+					timersub(&cur_time,&operation_started,&tv);
+				}
 				downtime=tv.tv_sec*1000+tv.tv_usec/1000;
 				if ( downtime > a->p.val)
 					toggle_alarm(t,a,1);

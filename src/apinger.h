@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.8 2002/07/17 09:32:51 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.9 2002/07/17 17:56:23 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -66,6 +66,8 @@ struct target {
 	int last_received;	/* sequence number of the last ping received */
 	struct timeval last_received_tv; /* timestamp of the last ping received */
 	int received;		/* number of packets received */
+	int upreceived;		/* number of packets received during recent target uptime */
+	int upsent;		/* number of packets send during recent target uptime */
 	int recently_lost;	/* number of packets lost between
 				   last_sent-200 to last_sent-100
 				   for avg. lost computation */
