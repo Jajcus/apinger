@@ -1,5 +1,12 @@
 2002-07-16  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: - Version: 0.2-test4
+
+	* src/apinger.c, src/icmp.c:
+	- include <arpa/inet.h> after <netinet/in.h>
+
+	* src/icmp6.c: - use SOL_SOCKET/IPV6_CHECKSUM only if available
+
 	* configure.ac: - version: 0.2-test3
 
 	* src/Makefile.am: - tv_macros.h added to sources
