@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: rrd.c,v 1.1 2002/10/03 12:37:09 cvs-jajcus Exp $
+ *  $Id: rrd.c,v 1.2 2002/10/03 13:24:16 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -125,7 +125,7 @@ int ret;
 		if (ret>0){
 			if (t->upsent > t->config->avg_loss_delay_samples
 						+t->config->avg_loss_samples){
-				ret=fprintf(rrdtool_pipe,":%0.1f",
+				ret=fprintf(rrdtool_pipe,":%f",
 						100*((double)t->recently_lost)/
 							t->config->avg_loss_samples);
 			}
@@ -133,7 +133,7 @@ int ret;
 		}
 		if (ret>0){
 			if (t->upsent > t->config->avg_delay_samples){
-				fprintf(rrdtool_pipe,":%0.2f",
+				fprintf(rrdtool_pipe,":%f",
 						(t->delay_sum/t->config->avg_delay_samples)/1000);
 			}
 			else ret=fprintf(rrdtool_pipe,":U");
