@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser1.y,v 1.5 2002/07/17 17:56:23 cvs-jajcus Exp $
+ *  $Id: cfgparser1.y,v 1.6 2002/07/18 09:33:06 cvs-jajcus Exp $
  */
 
 
@@ -47,7 +47,7 @@ struct target_cfg *cur_target;
 
 %verbose
 %locations
-%expect 12
+%expect 14
 %union {
 	int i;
 	char *s;
@@ -67,6 +67,7 @@ struct target_cfg *cur_target;
 %token PID_FILE
 %token MAILER
 
+%token STATUS
 %token ALARM
 %token TARGET
 
@@ -95,6 +96,8 @@ struct target_cfg *cur_target;
 %token AVG_LOSS_SAMPLES
 %token AVG_LOSS_DELAY_SAMPLES
 
+%token FILE_
+
 %token ERROR
 
 %token ON OFF
@@ -115,6 +118,7 @@ config:	/* */
 	| GROUP string { cur_config.group=$2; }
 	| MAILER string { cur_config.group=$2; }
 	| PID_FILE string { cur_config.group=$2; }
+	| STATUS '{' statuscfg '}'
 	| alarm 
 	| target 
 	| config separator config
@@ -235,6 +239,17 @@ alarmlist: string
 	| alarmlist ',' string 
 		{ $$=alarm2list($3,$1); }
 ;
+
+statuscfg: /* */ 
+	| FILE_ string 
+		{ cur_config.status_file=$2; }
+	| INTERVAL INTEGER
+		{ cur_config.status_interval=$2; }
+	| INTERVAL TIME
+		{ cur_config.status_interval=$2; }
+	| statuscfg separator statuscfg
+;
+
 
 string: STRING	{ $$=pool_strdup(&cur_config.pool,$1); }
 ;

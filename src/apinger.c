@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.15 2002/07/18 08:47:20 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.16 2002/07/18 09:33:06 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -559,7 +559,6 @@ struct alarm_list *al,*an;
 struct alarm_cfg *a;
 int r;
 	
-	logit("SIGHUP received, reloading configuration");
 	for(t=targets;t;t=t->next)
 		for(al=t->active_alarms;al;al=an){
 			an=al->next;
@@ -570,9 +569,48 @@ int r;
 	if (r==0) configure_targets();
 }
 
+void write_status(void){
+FILE *f;
+struct target *t;
+struct alarm_list *al;
+struct alarm_cfg *a;
+
+	if (config->status_file==NULL) return;
+	
+	f=fopen(config->status_file,"w");
+	if (f==NULL){
+		logit("Couldn't open status file");
+		myperror(config->status_file);
+		return;
+	}
+	for(t=targets;t;t=t->next){
+		fprintf(f,"Target: %s\n",t->name);
+		fprintf(f,"Description: %s\n",t->config->description);
+		if (t->received>=t->config->avg_delay_samples){
+			fprintf(f,"Average delay: %0.2fms\n",
+				t->delay_sum/t->config->avg_delay_samples);
+		}
+		if (t->upsent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
+			fprintf(f,"Average packet loss: %0.1f%%\n",
+				100*((double)t->recently_lost)/t->config->avg_loss_samples);
+		}
+		fprintf(f,"Active alarms:");
+		if (t->active_alarms){
+			for(al=t->active_alarms;al;al=al->next){
+				a=al->alarm;
+				fprintf(f," \"%s\"",a->name);
+			}
+			fprintf(f,"\n");
+		}
+		else fprintf(f," None\n");
+		fprintf(f,"\n");
+	}
+	fclose(f);
+}
+
 void main_loop(void){
 struct target *t;
-struct timeval cur_time,tv;
+struct timeval cur_time,next_status,tv;
 struct pollfd pfd[2];
 int timeout;
 int npfd=0;
@@ -592,6 +630,12 @@ struct alarm_cfg *a;
 		pfd[npfd].events=POLLIN|POLLERR|POLLHUP|POLLNVAL;
 		pfd[npfd++].fd=icmp6_sock;
 		pfd[npfd].revents=0;
+	}
+	if (config->status_interval){
+		gettimeofday(&cur_time,NULL);
+		tv.tv_sec=config->status_interval/1000;
+		tv.tv_usec=config->status_interval*1000;
+		timeradd(&cur_time,&tv,&next_status);
 	}
 	while(!interrupted_by){
 		gettimeofday(&cur_time,NULL);
@@ -618,6 +662,17 @@ struct alarm_cfg *a;
 			if (!timerisset(&next_probe) || timercmp(&t->next_probe,&next_probe,<))
 				next_probe=t->next_probe;
 		}
+		if (config->status_interval){
+			if (timercmp(&next_status,&cur_time,<)){
+				tv.tv_sec=config->status_interval/1000;
+				tv.tv_usec=config->status_interval*1000;
+				timeradd(&cur_time,&tv,&next_status);
+				if (config->status_file) write_status();
+				status_request=0;
+			}
+			if (!timerisset(&next_probe) || timercmp(&next_status,&next_probe,<))
+				next_probe=next_status;
+		}
 		strftime(buf,100,"%b %d %H:%M:%S",localtime(&next_probe.tv_sec));
 		debug("Next event scheduled for %s",buf);
 		gettimeofday(&cur_time,NULL);
@@ -636,8 +691,16 @@ struct alarm_cfg *a;
 			else if (pfd[i].fd==icmp6_sock) recv_icmp6();
 			pfd[i].revents=0;
 		}
+		if (status_request){
+			status_request=0;
+			if (config->status_file){
+				logit("SIGUSR1 received, writting status.");
+				write_status();
+			}
+		}
 		if (reload_request){
 			reload_request=0;
+			logit("SIGHUP received, reloading configuration.");
 			reload_config();
 		}
 	}

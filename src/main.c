@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.10 2002/07/18 08:47:20 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.11 2002/07/18 09:33:07 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -71,7 +71,9 @@ struct config default_config={
 	"nobody",		/* user */
 	NULL,			/* group */
 	"/usr/lib/sendmail -t",	/* mailer */
-	"/var/run/apinger.pid" /* pid file */
+	"/var/run/apinger.pid", /* pid file */
+	NULL,			/* status file */
+	0			/* status interval */
 };
 
 int foreground=1;
@@ -86,12 +88,17 @@ struct timeval next_probe={0,0};
 /* Interrupt handler */
 typedef void (*sighandler_t)(int);
 volatile int reload_request=0;
+volatile int status_request=0;
 volatile int interrupted_by=0;
 void signal_handler(int signum){
 
 	if (signum==SIGHUP){
 		signal(SIGHUP,signal_handler);
 		reload_request=1;
+	}
+	else if (signum==SIGUSR1){
+		signal(SIGUSR1,signal_handler);
+		status_request=1;
 	}
 	else{
 		interrupted_by=signum;
@@ -224,6 +231,7 @@ int stay_foreground=0;
 	signal(SIGTERM,signal_handler);
 	signal(SIGINT,signal_handler);
 	signal(SIGHUP,signal_handler);
+	signal(SIGUSR1,signal_handler);
 	signal(SIGPIPE,SIG_IGN);
 	main_loop();
 	if (icmp_sock>=0) close(icmp_sock);

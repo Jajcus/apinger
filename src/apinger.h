@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.10 2002/07/18 08:47:20 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.11 2002/07/18 09:33:06 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -113,5 +113,6 @@ void main_loop(void);
 
 extern volatile int interrupted_by;
 extern volatile int reload_request;
+extern volatile int status_request;
 
 #endif

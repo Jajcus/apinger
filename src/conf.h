@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.h,v 1.5 2002/07/17 17:56:23 cvs-jajcus Exp $
+ *  $Id: conf.h,v 1.6 2002/07/18 09:33:06 cvs-jajcus Exp $
  */
 
 #ifndef conf_h
@@ -85,6 +85,8 @@ struct config {
 	char *group;
 	char *mailer;
 	char *pid_file;
+	char *status_file;
+	int status_interval;
 };
 
 extern struct config cur_config,default_config;

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser2.l,v 1.5 2002/07/17 17:56:23 cvs-jajcus Exp $
+ *  $Id: cfgparser2.l,v 1.6 2002/07/18 09:33:06 cvs-jajcus Exp $
  */
 
 
@@ -83,6 +83,7 @@ delay_low	{ LOC; LOCINC; return DELAY_LOW; }
 description	{ LOC; LOCINC; return DESCRIPTION; }
 down		{ LOC; LOCINC; return DOWN; }
 false		{ LOC; LOCINC; return FALSE; }
+file		{ LOC; LOCINC; return FILE_; }
 group		{ LOC; LOCINC; return GROUP; }
 interval	{ LOC; LOCINC; return INTERVAL; }
 loss		{ LOC; LOCINC; return LOSS; }
@@ -97,6 +98,7 @@ percent_high	{ LOC; LOCINC; return PERCENT_HIGH; }
 percent_low	{ LOC; LOCINC; return PERCENT_LOW; }
 pid_file	{ LOC; LOCINC; return PID_FILE; }
 pipe		{ LOC; LOCINC; return PIPE; }
+status		{ LOC; LOCINC; return STATUS; }
 target		{ LOC; LOCINC; return TARGET; }
 time		{ LOC; LOCINC; return TIME_; }
 true		{ LOC; LOCINC; return TRUE; }
@@ -114,8 +116,7 @@ yes		{ LOC; LOCINC; return YES; }
 [ \t]+		{ LOC; LOCINC; }
 
 .           	{ LOC; LOCINC; yylval.s=yytext; 
-		  logit("Configuration file syntax error. Line %i, character %i ('%c')",
-					yylloc.first_line+1,yylloc.first_column+1,yytext[0]);
+		  logit("Unexpected character: '%c'", yytext[0]);
 		  return ERROR;
 		}
 
