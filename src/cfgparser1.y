@@ -177,6 +177,8 @@ targetcfg: /* */
 		{ cur_target->alarms=$2; }
 	| INTERVAL INTEGER
 		{ cur_target->interval=$2; }
+	| INTERVAL TIME
+		{ cur_target->interval=$2; }
 	| AVG_DELAY_SAMPLES INTEGER
 		{ cur_target->avg_delay_samples=$2; }
 	| AVG_LOSS_SAMPLES INTEGER
