@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.38 2002/12/19 08:17:47 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.39 2002/12/20 09:21:40 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -55,7 +55,8 @@
 
 struct delayed_report {
 	int on;
-	int thisid,lastid;
+	char *msgid;
+	char *lastmsgid;
 	struct alarm_cfg *a;
 	struct target t;
 	struct timeval timestamp;
@@ -66,6 +67,7 @@ struct delayed_report *delayed_reports=NULL;
 
 struct timeval operation_started;
 
+
 int is_alarm_on(struct target *t,struct alarm_cfg *a){
 struct active_alarm_list *al;
 
@@ -75,15 +77,31 @@ struct active_alarm_list *al;
 	return 0;
 }
 
-unsigned alarm_on(struct target *t,struct alarm_cfg *a){
+static char msgid_buf[1024];
+static char hostnamebuf[256]="-";
+
+char *gen_msgid(struct target *t,char *suff){
+struct timeval cur_time,tv;
+	
+	gettimeofday(&cur_time,NULL);
+	
+	gethostname(hostnamebuf,sizeof(hostnamebuf));
+	sprintf(msgid_buf,"<%p.%i.%s@%s>",
+				t,cur_time.tv_usec/1000+cur_time.tv_sec*1000,
+				suff,hostnamebuf);
+	return strdup(msgid_buf);
+}
+
+char *alarm_on(struct target *t,struct alarm_cfg *a){
 struct active_alarm_list *al;
 struct timeval cur_time,tv;
+int r;
 
 	gettimeofday(&cur_time,NULL);
 	al=NEW(struct active_alarm_list,1);
 	al->next=t->active_alarms;
 	al->alarm=a;
-	al->id=cur_time.tv_usec/1000+cur_time.tv_sec*1000;
+	al->msgid=gen_msgid(t,"on");
 	al->num_repeats=0;
 	if (a->repeat_interval){
 		tv.tv_sec=a->repeat_interval/1000;
@@ -91,12 +109,12 @@ struct timeval cur_time,tv;
 		timeradd(&cur_time,&tv,&al->next_repeat);
 	}
 	t->active_alarms=al;
-	return al->id;
+	return strdup(al->msgid);
 }
 
-unsigned alarm_off(struct target *t,struct alarm_cfg *a){
+char *alarm_off(struct target *t,struct alarm_cfg *a){
 struct active_alarm_list *al,*pa,*na;
-int id;
+char *msgid;
 
 	pa=NULL;
 	for(al=t->active_alarms;al;al=na){
@@ -106,14 +124,14 @@ int id;
 				pa->next=na;
 			else
 				t->active_alarms=na;
-			id=al->id;
+			msgid=al->msgid;
 			free(al);
-			return id;
+			return msgid;
 		}
 		else pa=al;
 	}
 	logit("Alarm '%s' not found in '%s'",a->name,t->name);
-	return 0;
+	return NULL;
 }
 
 static char *macros_buf=NULL;
@@ -273,7 +291,7 @@ time_t tm;
 	}
 }
 
-void make_reports(struct target *t,struct alarm_cfg *a,int on,int thisid,int lastid){
+void make_reports(struct target *t,struct alarm_cfg *a,int on,char* thisid,char* lastid){
 FILE *p;
 char buf[1024];
 char *mailto,*mailfrom,*mailenvfrom;
@@ -303,12 +321,10 @@ const char *command;
 		if (mailfrom) {
 			fprintf(p,"From: %s\n",subst_macros(mailfrom,t,a,on));
 		}
-		gethostname(buf,1024);
-		fprintf(p,"Message-Id: <apinger-%u-%s-%s-%s@%s>\n",
-				thisid,t->name,a->name,(on>0)?"on":"off",buf);
-		if (on<=0)
-			fprintf(p,"References: <apinger-%u-%s-%s-%s@%s>\n",
-				lastid,t->name,a->name,"on",buf);
+		if (thisid!=NULL)
+			fprintf(p,"Message-Id: %s\n",thisid);
+		if (lastid!=NULL && lastid[0]!='\000')
+			fprintf(p,"References: %s\n",lastid);
 				
 		fprintf(p,"\n");
 		write_report(p,t,a,on);
@@ -365,43 +381,68 @@ const char *command;
 void make_delayed_reports(void){
 struct alarm_cfg *alarm;
 struct target target;
-int on,thisid,lastid;
+int on;
+char *msgid,*references;
 struct delayed_report *dr,*pdr,*ndr;
-int names_len,descriptions_len;
+int names_len,descriptions_len,references_len;
 char *names,*descriptions;
 	
 
 	if (delayed_reports==NULL) return;
 	on=delayed_reports->on;
-	thisid=delayed_reports->thisid;
-	lastid=delayed_reports->lastid;
+	msgid=strdup(delayed_reports->msgid);
 	alarm=delayed_reports->a;
 	target=delayed_reports->t;
-	names_len=descriptions_len=0;
+	names_len=descriptions_len=references_len=0;
 	for(dr=delayed_reports;dr;dr=dr->next){
 		if (dr->a==alarm && dr->on==on){
 			names_len+=strlen(dr->t.name)+1;
 			descriptions_len+=strlen(dr->t.description)+1;
+			if (dr->lastmsgid){
+				references_len+=strlen(dr->lastmsgid)+1;
+			}
 		}
 	}
 
-	names=NEW(char,names_len);
+	names=NEW(char,names_len+1);
 	names[0]='\000';
-	descriptions=NEW(char,descriptions_len);
+	descriptions=NEW(char,descriptions_len+1);
 	descriptions[0]='\000';
+	references=NEW(char,references_len+1);
+	references[0]='\000';
 
 	pdr=NULL;
 	for(dr=delayed_reports;dr;dr=ndr){
 		ndr=dr->next;
 		if (dr->a==alarm && dr->on==on){
+			if (on){
+				struct active_alarm_list *al;
+				struct target *t;
+				for(t=targets;t;t=t->next){
+					if (strcmp(dr->t.name,t->name)) continue;
+					for(al=t->active_alarms;al;al=al->next){
+						if (al->alarm==alarm){
+							if (al->msgid!=NULL) free(al->msgid);
+							al->msgid=strdup(msgid);
+						}
+					}
+					break;
+				}
+			}
 			if (names[0]!='\000') strcat(names,",");
 			strcat(names,dr->t.name);
 			if (descriptions[0]!='\000') strcat(descriptions,",");
 			strcat(descriptions,dr->t.description);
+			if (dr->lastmsgid){
+				if (references[0]!='\000') strcat(references," ");
+				strcat(references,dr->lastmsgid);
+			}
 			if (pdr!=NULL) 
 				pdr->next=ndr;
 			else
 				delayed_reports=ndr;
+			free(dr->msgid);
+			free(dr->lastmsgid);
 			free(dr);
 		}
 		else pdr=dr;
@@ -410,24 +451,25 @@ char *names,*descriptions;
 	target.name=names;
 	target.description=descriptions;
 
-	make_reports(&target,alarm,on,thisid,lastid);
+	make_reports(&target,alarm,on,msgid,references);
 
+	free(msgid);
 	free(names);
 	free(descriptions);
+	free(references);
 }
 
 void toggle_alarm(struct target *t,struct alarm_cfg *a,int on){
-unsigned thisid,lastid;
+char *thisid=NULL,*lastid=NULL;
 struct delayed_report *dr,*tdr;
 
 	if (on>0){
 		logit("ALARM: %s(%s)  *** %s ***",t->description,t->name,a->name);
 		thisid=alarm_on(t,a);
-		lastid=0;
 	}
 	else{
-		thisid=0;
 		lastid=alarm_off(t,a);
+		thisid=gen_msgid(t,"off");
 		if (on==0)
 			logit("alarm canceled: %s(%s)  *** %s ***",t->description,t->name,a->name);
 		else
@@ -443,8 +485,9 @@ struct delayed_report *dr,*tdr;
 		assert(dr!=NULL);
 		dr->t=*t;
 		dr->a=a;
-		dr->thisid=thisid;
-		dr->lastid=lastid;
+		dr->msgid=strdup(thisid);
+		if (lastid) dr->lastmsgid=strdup(lastid);
+		else dr->lastmsgid=NULL;
 		dr->on=on;
 		gettimeofday(&dr->timestamp,NULL);
 		dr->next=NULL;
@@ -454,6 +497,8 @@ struct delayed_report *dr,*tdr;
 			tdr->next=dr;
 	}
 	else make_reports(t,a,on,thisid,lastid);
+	free(thisid);
+	free(lastid);
 }
 
 /* if a time came for the next event schedule next one in given interval and return 1 */
@@ -948,6 +993,8 @@ struct piped_info pi;
 				send_probe(t);
 			}
 			for(aal=t->active_alarms;aal;aal=aal->next){
+				char *msgid;
+				char buf[100];
 				a=aal->alarm;
 				if (a->repeat_interval<=0)
 					continue;
@@ -957,7 +1004,10 @@ struct piped_info pi;
 					continue;
 				aal->num_repeats++;
 				debug("Repeating reports...");
-				make_reports(t,a,1,aal->id+aal->num_repeats,aal->id);
+				sprintf(buf,"%i",aal->num_repeats);
+				msgid=gen_msgid(t,buf);
+				make_reports(t,a,1,msgid,aal->msgid);
+				free(msgid);
 			}
 		}
 		if (config->status_interval){
