@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.31 2002/10/14 10:23:34 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.32 2002/10/16 08:20:10 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -193,18 +193,15 @@ time_t tim;
 			values[n]=pr;
 			break;
 		case 'l':
-			if (t->upsent > t->config->avg_loss_delay_samples
-						+t->config->avg_loss_samples){
-				sprintf(al,"%0.1f%%",
-						100*((double)t->recently_lost)/
-							t->config->avg_loss_samples);
+			if (AVG_LOSS_KNOWN(t)){
+				sprintf(al,"%0.1f%%",AVG_LOSS(t));
 				values[n]=al;
 			}
 			else values[n]="n/a";
 			break;
 		case 'd':
-			if (t->upsent > t->config->avg_delay_samples){
-				sprintf(ad,"%0.3fms",t->delay_sum/t->config->avg_delay_samples);
+			if (AVG_DELAY_KNOWN(t)){
+				sprintf(ad,"%0.3fms",AVG_DELAY(t));
 				values[n]=ad;
 			}
 			else values[n]="n/a";
@@ -266,13 +263,11 @@ time_t tm;
 	fprintf(f,"Replies received: %i\n",t->received);
 	fprintf(f,"Last reply received: #%i %s",t->last_received,
 			ctime(&t->last_received_tv.tv_sec));
-	if (t->received>=t->config->avg_delay_samples){
-		fprintf(f,"Recent avg. delay: %4.3fms\n",
-				t->delay_sum/t->config->avg_delay_samples);
+	if (AVG_DELAY_KNOWN(t)){
+		fprintf(f,"Recent avg. delay: %4.3fms\n",AVG_DELAY(t));
 	}
-	if (t->upsent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
-		fprintf(f,"Recent avg. packet loss: %5.1f%%\n",
-				100*((double)t->recently_lost)/t->config->avg_loss_samples);
+	if (AVG_LOSS_KNOWN(t)){
+		fprintf(f,"Recent avg. packet loss: %5.1f%%\n",AVG_LOSS(t));
 	}
 }
 
@@ -550,10 +545,7 @@ struct alarm_cfg *a;
 	t->delay_sum+=delay-tmp;
 	t->received++;
 
-	if (t->received>t->config->avg_delay_samples){
-		avg_delay=t->delay_sum/t->config->avg_delay_samples;
-	}
-	else avg_delay=t->delay_sum/t->received;
+	avg_delay=AVG_DELAY(t);
 	debug("(avg: %4.3fms)",avg_delay);
 
 	i=ti->seq%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
@@ -561,10 +553,11 @@ struct alarm_cfg *a;
 		t->recently_lost--;
 	t->queue[i]=1;
 	
-	if (t->upsent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
-		avg_loss=100*((double)t->recently_lost)/t->config->avg_loss_samples;
+	if (AVG_LOSS_KNOWN(t)){
+		avg_loss=AVG_LOSS(t);
 	}else
 		avg_loss=0;
+
 	debug("(avg. loss: %5.1f%%)",avg_loss);
 	
 	paa=NULL;
@@ -587,7 +580,7 @@ struct alarm_cfg *a;
 		if (is_alarm_on(t,a)) continue;
 		switch(a->type){
 		case AL_DELAY:
-			if (t->received>t->config->avg_delay_samples && avg_delay>a->p.lh.high )
+			if (AVG_DELAY_KNOWN(t) && avg_delay>a->p.lh.high )
 				toggle_alarm(t,a,1);
 			break;
 		case AL_LOSS:
@@ -755,13 +748,9 @@ time_t tm;
 	for(t=targets;t;t=t->next){
 		fprintf(f,"Target: %s\n",t->name);
 		fprintf(f,"Description: %s\n",t->description);
-		if (t->received>=t->config->avg_delay_samples){
-			fprintf(f,"Average delay: %0.3fms\n",
-				t->delay_sum/t->config->avg_delay_samples);
-		}
-		if (t->upsent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
-			fprintf(f,"Average packet loss: %0.1f%%\n",
-				100*((double)t->recently_lost)/t->config->avg_loss_samples);
+		fprintf(f,"Average delay: %0.3fms\n",AVG_DELAY(t));
+		if (AVG_LOSS_KNOWN(t)){
+			fprintf(f,"Average packet loss: %0.1f%%\n",AVG_LOSS(t));
 		}
 		fprintf(f,"Active alarms:");
 		if (t->active_alarms){
@@ -980,6 +969,9 @@ struct piped_info pi;
 			reload_config();
 		}
 	}
+#ifdef FORKED_RECEIVER
+	kill(pid,SIGTERM);
+#endif
 	free_targets();
 	if (macros_buf!=NULL) free(macros_buf);
 }

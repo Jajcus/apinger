@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.17 2002/10/04 13:39:01 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.18 2002/10/16 08:20:10 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -91,6 +91,12 @@ struct target {
 	
 	struct target *next;
 };
+
+#define AVG_DELAY_KNOWN(t) (t->upsent >= t->config->avg_delay_samples)
+#define AVG_DELAY(t) ((t->received>=t->config->avg_delay_samples)?(t->delay_sum/t->config->avg_delay_samples):((t->received>0)?(t->delay_sum/t->received):(0)))
+
+#define AVG_LOSS_KNOWN(t) (t->upsent > t->config->avg_loss_delay_samples+t->config->avg_loss_samples)
+#define AVG_LOSS(t) (100*((double)t->recently_lost)/t->config->avg_loss_samples)
 
 struct trace_info {
 	struct timeval timestamp;
