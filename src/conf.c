@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.c,v 1.10 2002/07/26 08:39:13 cvs-jajcus Exp $
+ *  $Id: conf.c,v 1.11 2002/09/24 11:38:24 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -150,6 +150,7 @@ int ret;
 	memset(&yylloc,0,sizeof(yylloc));
 	cur_config=default_config;	
 	ret=yyparse();
+	fclose(yyin);
 	if (ret==0){
 		for(a=cur_config.alarms;a;a=a->next){
 			if (a->mailto==NULL)
@@ -199,5 +200,12 @@ int ret;
 	}
 	memset(&cur_config,0,sizeof(cur_config));
 	return ret;
+}
+
+void free_config(void){
+struct pool_item *pool;
+
+	pool=config->pool;
+	pool_clear(&pool);
 }
 
