@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.27 2002/09/26 09:06:27 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.28 2002/10/01 08:14:03 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -450,12 +450,37 @@ struct delayed_report *dr,*tdr;
 	else make_reports(t,a,on,thisid,lastid);
 }
 
+/* if a time came for the next event schedule next one in given interval and return 1 */
+int scheduled_event(struct timeval *next_event,struct timeval *cur_time,int interval){
+struct timeval ct,tv;
+int ret;
+
+	if (cur_time==NULL){
+		gettimeofday(&ct,NULL);
+		cur_time=&ct;
+	}	
+	if (!timerisset(next_event) || timercmp(next_event,cur_time,<)){
+		if (!timerisset(next_event)){
+			*next_event=*cur_time;
+		}
+		tv.tv_sec=interval/1000;
+		tv.tv_usec=(interval%1000)*1000;
+		timeradd(cur_time,&tv,next_event);
+		ret=1;
+	}
+	else {
+		ret=0;
+	}
+	if (!timerisset(&next_probe) || timercmp(next_event,&next_probe,<))
+		next_probe=*next_event;
+	return ret;
+}
+
 void send_probe(struct target *t,struct timeval *cur_time){
 int i,i1;
 char buf[100];
 int seq;
 
-	timeradd(cur_time,&t->interval_tv,&t->next_probe);
 	seq=++t->last_sent;
 	debug("Sending ping #%i to %s (%s)",seq,t->description,t->name);
 	strftime(buf,100,"%b %d %H:%M:%S",localtime(&t->next_probe.tv_sec));
@@ -644,8 +669,6 @@ int l;
 			targets=t;
 		}
 		t->config=tc;
-		t->interval_tv.tv_usec=(tc->interval%1000)*1000;
-		t->interval_tv.tv_sec=tc->interval/1000;
 		l=tc->avg_loss_delay_samples+tc->avg_loss_samples;
 		if (t->queue)
 			t->queue=(char *)realloc(t->queue,l);
@@ -795,39 +818,27 @@ struct alarm_cfg *a;
 				if ( downtime > a->p.val)
 					toggle_alarm(t,a,1);
 			}
-			if (timercmp(&(t->next_probe),&cur_time,<)){
+			if (scheduled_event(&(t->next_probe),&cur_time,t->config->interval)){
 				send_probe(t,&cur_time);
 			}
-			if (!timerisset(&next_probe) || timercmp(&t->next_probe,&next_probe,<))
-				next_probe=t->next_probe;
 			for(aal=t->active_alarms;aal;aal=aal->next){
 				a=aal->alarm;
 				if (a->repeat_interval<=0)
 					continue;
-				if (!timercmp(&aal->next_repeat,&cur_time,<))
+				if (!scheduled_event(&aal->next_repeat,&cur_time,a->repeat_interval))
 					continue;
-				if (aal->num_repeats>=a->repeat_max)
+				if (a->repeat_max && aal->num_repeats>=a->repeat_max)
 					continue;
 				aal->num_repeats++;
 				debug("Repeating reports...");
 				make_reports(t,a,1,aal->id+aal->num_repeats,aal->id);
-				tv.tv_sec=a->repeat_interval/1000;
-				tv.tv_usec=(a->repeat_interval%1000)*1000;
-				timeradd(&cur_time,&tv,&aal->next_repeat);
-				if (!timerisset(&next_probe) || timercmp(&aal->next_repeat,&next_probe,<))
-					next_probe=aal->next_repeat;
 			}
 		}
 		if (config->status_interval){
-			if (timercmp(&next_status,&cur_time,<)){
-				tv.tv_sec=config->status_interval/1000;
-				tv.tv_usec=(config->status_interval%1000)*1000;
-				timeradd(&cur_time,&tv,&next_status);
+			if (scheduled_event(&next_status,&cur_time,config->status_interval)){
 				if (config->status_file) write_status();
 				status_request=0;
 			}
-			if (!timerisset(&next_probe) || timercmp(&next_status,&next_probe,<))
-				next_probe=next_status;
 		}
 		if (delayed_reports){
 			if (timerisset(&next_report) && timercmp(&next_report,&cur_time,<)){
