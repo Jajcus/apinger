@@ -1,5 +1,7 @@
 2002-10-03  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* src/rrd.c: - write more precise numbers to RRD
+
 	* src/Makefile.am, src/apinger.c, src/apinger.h, src/conf.c, src/main.c, src/rrd.c, src/rrd.h, configure.ac:
 	- rrdtool support improvements
 
