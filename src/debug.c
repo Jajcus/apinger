@@ -12,7 +12,9 @@
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
-#include <time.h>
+#ifdef HAVE_TIME_H
+# include <time.h>
+#endif
 #ifdef HAVE_STDARG_H
 # include <stdarg.h>
 #endif

@@ -1,20 +1,28 @@
 #include "config.h"
+
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
 #ifdef HAVE_UNISTD_H
+# include <sys/types.h>
 # include <unistd.h>
 #endif
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
-#include <time.h>
+#if TIME_WITH_SYS_TIME
+# include <time.h>
+# include <sys/time.h>
+#else
+#  ifdef HAVE_SYS_TIME_H
+#   include <sys/time.h>
+#  else
+#   include <time.h>
+#  endif
+#endif
 #ifdef HAVE_SYS_WAIT_H
 # include <sys/wait.h>
-#endif
-#ifdef HAVE_SYS_TIME_H
-# include <sys/time.h>
 #endif
 #ifdef HAVE_SYS_POLL_H
 # include <sys/poll.h>
@@ -23,7 +31,7 @@
 # include <sys/socket.h>
 #endif
 #ifdef HAVE_ARPA_INET_H
-#include <arpa/inet.h>
+# include <arpa/inet.h>
 #endif
 
 #include "apinger.h"
