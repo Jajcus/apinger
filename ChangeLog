@@ -1,5 +1,9 @@
 2002-10-24  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* doc/FAQ.xml: - cosmetics
+
+	* src/apinger.c: - more fixes (?) for combined reports
+
 	* src/cfgparser1.y:
 	- write pid_file option value to pid_file, not the group setting.  (Patch by
 	  Stephanie Lockwood-Childs)
