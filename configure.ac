@@ -1,7 +1,7 @@
-# $Id: configure.ac,v 1.21 2002/10/04 13:39:00 cvs-jajcus Exp $
+# $Id: configure.ac,v 1.22 2002/10/14 11:08:00 cvs-jajcus Exp $
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT([apinger], [0.5-test1], [jajcus@pld.org.pl])
+AC_INIT([apinger], [0.5], [jajcus@pld.org.pl])
 AC_CONFIG_SRCDIR([src/apinger.c])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
@@ -25,7 +25,7 @@ AC_CHECK_HEADERS([arpa/inet.h errno.h malloc.h \
 		stddef.h stdlib.h string.h sys/socket.h \
 		sys/time.h syslog.h unistd.h time.h \
 		assert.h sys/poll.h signal.h pwd.h grp.h stdarg.h\
-		limits.h sys/wait.h sched.h])
+		limits.h sys/wait.h sched.h sys/ioctl.h sys/uio.h])
 AC_HEADER_TIME
 
 JK_LINUX_FILTER
@@ -48,7 +48,7 @@ AC_CHECK_FUNCS([gettimeofday inet_ntoa memset socket \
 strdup strerror strpbrk poll vsyslog time popen setvbuf access],
 	[],AC_MSG_ERROR(some needed function is missing))
 
-AC_CHECK_FUNCS(sched_yield)
+AC_CHECK_FUNCS([sched_yield recvmsg])
 
 AC_ARG_ENABLE(forked-receiver,[AC_HELP_STRING([--enable-forked-receiver],
 	      			[Create subprocess for receiving pings.])],
