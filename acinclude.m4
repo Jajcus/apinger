@@ -1,3 +1,5 @@
+# $Id: acinclude.m4,v 1.3 2002/07/17 09:32:51 cvs-jajcus Exp $
+
 AC_PREREQ([2.52])
 
 # JK_LINUX_FILTER

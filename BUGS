@@ -1,1 +1,4 @@
 - loss alram (additionaly to the proper down alarm) is fired when target is down
+
+--
+$Id: BUGS,v 1.2 2002/07/17 09:32:51 cvs-jajcus Exp $
