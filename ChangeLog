@@ -1,3 +1,12 @@
+2002-12-19  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/icmp6.c: - fix for compilation without IPv6
+
+	* configure.ac: - 0.6-test5
+	- IPv6 support made optional (enabled by default)
+
+	* src/apinger.c: - abort on loss computation error
+
 2002-11-13  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/cfgparser1.y, src/main.c:
