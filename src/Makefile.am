@@ -1,5 +1,5 @@
 
-EXTRA_DIST = cfgparser1.h
+EXTRA_DIST = cfgparser1.h apinger.conf
 EXTRA_PROGRAMS = cfgtest
 sbin_PROGRAMS = apinger
 
