@@ -25,9 +25,6 @@
 #ifdef HAVE_SYS_SOCKET_H
 # include <sys/socket.h>
 #endif
-#ifdef HAVE_ARPA_INET_H
-# include <arpa/inet.h>
-#endif
 #ifdef HAVE_NETINET_IN_SYSTM_H
 # include <netinet/in_systm.h>
 #endif
@@ -39,6 +36,9 @@
 #endif
 #ifdef HAVE_NETINET_IP_ICMP_H
 # include <netinet/ip_icmp.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+# include <arpa/inet.h>
 #endif
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
