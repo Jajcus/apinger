@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.28 2002/10/01 08:14:03 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.29 2002/10/03 12:37:09 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -43,6 +43,7 @@
 
 #include "debug.h"
 #include "tv_macros.h"
+#include "rrd.h"
 
 #ifdef HAVE_ASSERT_H
 # include <assert.h>
@@ -146,23 +147,29 @@ time_t tim;
 			values[n]=t->description;
 			break;
 		case 'a':
-			values[n]=a->name;
+			if (a)
+				values[n]=a->name;
+			else
+				values[n]="?";
 			break;
 		case 'A':
-			switch(a->type){
-			case AL_DOWN:
-				values[n]="down";
-				break;
-			case AL_LOSS:
-				values[n]="loss";
-				break;
-			case AL_DELAY:
-				values[n]="delay";
-				break;
-			default:
-				values[n]="unknown";
-				break;
-			}
+			if (a)
+				switch(a->type){
+				case AL_DOWN:
+					values[n]="down";
+					break;
+				case AL_LOSS:
+					values[n]="loss";
+					break;
+				case AL_DELAY:
+					values[n]="delay";
+					break;
+				default:
+					values[n]="unknown";
+					break;
+				}
+			else
+				values[n]="?";
 			break;
 		case 'r':
 			switch(on){
@@ -196,8 +203,7 @@ time_t tim;
 			else values[n]="n/a";
 			break;
 		case 'd':
-			if (t->upsent > t->config->avg_loss_delay_samples
-						+t->config->avg_loss_samples){
+			if (t->upsent > t->config->avg_delay_samples){
 				sprintf(ad,"%0.2fms",t->delay_sum/t->config->avg_delay_samples);
 				values[n]=ad;
 			}
@@ -689,6 +695,8 @@ int l;
 		exit(1);
 	}
 	gettimeofday(&operation_started,NULL);
+	if (config->rrd_interval)
+		rrd_create();
 }
 
 void free_targets(void){
@@ -771,7 +779,7 @@ time_t tm;
 
 void main_loop(void){
 struct target *t;
-struct timeval cur_time,next_status,tv,next_report={0,0};
+struct timeval cur_time,next_status={0,0},tv,next_report={0,0},next_rrd_update={0,0};
 struct pollfd pfd[2];
 int timeout;
 int npfd=0;
@@ -838,6 +846,11 @@ struct alarm_cfg *a;
 			if (scheduled_event(&next_status,&cur_time,config->status_interval)){
 				if (config->status_file) write_status();
 				status_request=0;
+			}
+		}
+		if (config->rrd_interval){
+			if (scheduled_event(&next_rrd_update,&cur_time,config->rrd_interval)){
+				rrd_update();
 			}
 		}
 		if (delayed_reports){

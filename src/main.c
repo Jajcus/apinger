@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.17 2002/10/01 08:14:52 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.18 2002/10/03 12:37:09 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -40,6 +40,7 @@
 
 #include "conf.h"
 #include "debug.h"
+#include "rrd.h"
 
 /* Global variables */
 struct target *targets=NULL;
@@ -98,9 +99,14 @@ typedef void (*sighandler_t)(int);
 volatile int reload_request=0;
 volatile int status_request=0;
 volatile int interrupted_by=0;
+volatile int sigpipe_received=0;
 void signal_handler(int signum){
 
-	if (signum==SIGHUP){
+	if (signum==SIGPIPE){
+		signal(SIGPIPE,signal_handler);
+		sigpipe_received=1;
+	}
+	else if (signum==SIGHUP){
 		signal(SIGHUP,signal_handler);
 		reload_request=1;
 	}
@@ -116,12 +122,17 @@ void signal_handler(int signum){
 void usage(const char *name){
 	fprintf(stderr,"Alarm Pinger " PACKAGE_VERSION " (c) 2002 Jacek Konieczny <jajcus@pld.org.pl>\n");
 	fprintf(stderr,"Usage:\n");
-	fprintf(stderr,"\t%s [OPTIONS]\n",name);
-	fprintf(stderr,"\nOPTIONS:\n");
+	fprintf(stderr,"\t%s [-c <file>] [-f] [-d]\n",name);
+	fprintf(stderr,"\t%s [-c <file>] -g <dir> [-l <location>]\n",name);
+	fprintf(stderr,"\t%s -h\n",name);
+	fprintf(stderr,"\n");
+	fprintf(stderr,"\t-c <file>\talternate config file path.\n");
 	fprintf(stderr,"\t-f\trun in foreground.\n");
 	fprintf(stderr,"\t-d\tdebug on.\n");
-	fprintf(stderr,"\t-c <file>\talternate config file path.\n");
-	fprintf(stderr,"\t-h\tthis message.\n");
+	fprintf(stderr,"\t-g <dir>\tgenerate simple rrd-cgi script.\n");
+	fprintf(stderr,		"\t\t<dir> is a directory where generated graph will be stored.\n");
+	fprintf(stderr,"\t-l <location>\tHTTP location of generated graphs.\n");
+	fprintf(stderr,"\t-h\tthis help message.\n");
 }
 
 int main(int argc,char *argv[]){
@@ -133,8 +144,10 @@ pid_t pid;
 int i;
 int do_debug=0;
 int stay_foreground=0;
+char *graph_dir=NULL;
+char *graph_location="/apinger/";
 
-	while((c=getopt(argc,argv,"fdhc:")) != -1){
+	while((c=getopt(argc,argv,"fdhc:g:l:")) != -1){
 		switch(c){
 			case 'f':
 				stay_foreground=1;
@@ -147,6 +160,12 @@ int stay_foreground=0;
 				return 1;
 			case 'c':
 				config_file=optarg;
+				break;
+			case 'g':
+				graph_dir=optarg;
+				break;
+			case 'l':
+				graph_location=optarg;
 				break;
 			case ':':
 				fprintf (stderr, "Command-line option argument missing.\n");
@@ -163,6 +182,9 @@ int stay_foreground=0;
 		return 1;
 	}
 	if (do_debug) config->debug=1;
+
+	if (graph_dir!=NULL)
+		return rrd_print_cgi(graph_dir,graph_location);
 
 	if (!stay_foreground){
 		pidfile=fopen(config->pid_file,"r");
@@ -241,7 +263,7 @@ int stay_foreground=0;
 	signal(SIGINT,signal_handler);
 	signal(SIGHUP,signal_handler);
 	signal(SIGUSR1,signal_handler);
-	signal(SIGPIPE,SIG_IGN);
+	signal(SIGPIPE,signal_handler);
 	main_loop();
 	if (icmp_sock>=0) close(icmp_sock);
 	if (icmp6_sock>=0) close(icmp6_sock);

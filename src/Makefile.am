@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.10 2002/07/17 18:05:31 cvs-jajcus Exp $
+# $Id: Makefile.am,v 1.11 2002/10/03 12:37:09 cvs-jajcus Exp $
 
 EXTRA_DIST = cfgparser1.h apinger.conf
 EXTRA_PROGRAMS = cfgtest
@@ -16,6 +16,8 @@ apinger_SOURCES = \
 		icmp6.c \
 		main.c \
 		debug.c \
+		rrd.c \
+		rrd.h \
 		tv_macros.h
 
 

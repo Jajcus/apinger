@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.c,v 1.12 2002/09/25 10:11:14 cvs-jajcus Exp $
+ *  $Id: conf.c,v 1.13 2002/10/03 12:37:09 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -185,6 +185,8 @@ int ret;
 				t->avg_loss_samples=cur_config.target_defaults.avg_loss_samples;
 			if (t->avg_loss_delay_samples<=0)
 				t->avg_loss_delay_samples=cur_config.target_defaults.avg_loss_delay_samples;
+			if (t->rrd_filename==NULL)
+				t->rrd_filename=cur_config.target_defaults.rrd_filename;
 			for(al=t->alarms;al && al->next;al=al->next);
 			if (al)
 				al->next=cur_config.target_defaults.alarms;

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.15 2002/10/01 09:10:12 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.16 2002/10/03 12:37:09 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -33,7 +33,7 @@
 #   include <time.h>
 #  endif
 #endif
-#ifdef HAVE_SYS_SOCKET_H
+#ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
 #ifdef HAVE_SYS_SOCKET_H
@@ -125,6 +125,7 @@ const char * subst_macros(const char *string,struct target *t,struct alarm_cfg *
 extern volatile int interrupted_by;
 extern volatile int reload_request;
 extern volatile int status_request;
+extern volatile int sigpipe_received;
 
 #define NEW(type,size) ((type *)malloc(sizeof(type)*size))
 
