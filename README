@@ -1,5 +1,5 @@
 
-Alarm Pinger v. 0.3
+Alarm Pinger v. 0.4
 (c) 2002 Jacek Konieczny <jajcus@pld.org.pl>
 ============================================
 
@@ -34,4 +34,4 @@ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 Place, Suite 330, Boston, MA  02111-1307 USA
 
 --
-$Id: README,v 1.6 2002/07/18 10:42:38 cvs-jajcus Exp $
+$Id: README,v 1.7 2002/09/25 10:25:08 cvs-jajcus Exp $

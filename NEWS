@@ -1,3 +1,13 @@
+* Version 0.4
+
+	Main changes from 0.3:
+
+		- bugfixes
+		- ability to merge reports of multiple alarms fired in some
+		  configured interval ('combine' configuration directive)
+		- possible memory-leaks removed
+		- ability to repeat reports while alarm is on
+
 * Version 0.3
 
 	Main changes from 0.2:
@@ -24,4 +34,4 @@
 	This is the initial release
 
 --
-$Id: NEWS,v 1.6 2002/07/19 12:06:09 cvs-jajcus Exp $
+$Id: NEWS,v 1.7 2002/09/25 10:25:08 cvs-jajcus Exp $
