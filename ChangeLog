@@ -1,3 +1,10 @@
+2002-07-18  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* TODO, src/apinger.c, src/apinger.h, src/main.c:
+	- config file path can be set from command line
+
+	* BUGS: - -1
+
 2002-07-17  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/Makefile.am, src/apinger.conf, src/main.c:
