@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.35 2002/10/24 08:24:50 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.36 2002/10/25 06:30:06 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -436,7 +436,7 @@ struct delayed_report *dr,*tdr;
 		for(tdr=delayed_reports;tdr!=NULL && tdr->next!=NULL;tdr=tdr->next){
 			if (strcmp(tdr->t.name,t->name)==0 && tdr->a==a && tdr->on==on) return;
 		}
-		if (strcmp(tdr->t.name,t->name)==0 && tdr->a==a && tdr->on==on) return;
+		if (tdr!=NULL && strcmp(tdr->t.name,t->name)==0 && tdr->a==a && tdr->on==on) return;
 		dr=NEW(struct delayed_report,1);
 		assert(dr!=NULL);
 		dr->t=*t;
