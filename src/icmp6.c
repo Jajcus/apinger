@@ -147,8 +147,10 @@ int opt;
 		myperror("socket");
 	else {
 		opt=2;
+#if defined(SOL_RAW) && defined(IPV6_CHECKSUM)
 		if (setsockopt(icmp6_sock, SOL_RAW, IPV6_CHECKSUM, &opt, sizeof(int)))
 			myperror("setsockopt(IPV6_CHECKSUM)");
+#endif
 		/*install_filter6();*/
 	}
 	return icmp6_sock;
