@@ -1,6 +1,9 @@
 <?xml version='1.0'?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
 	"http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<!-- <?xml-stylesheet href="xsl-stylesheets/html/docbook.xsl" type="text/xml"?>
+-->
+
 <article class="faq">
 <articleinfo>
 	<author><firstname>Jacek</firstname><surname>Konieczny</surname></author>
@@ -49,12 +52,13 @@
 </qandaentry>
 <qandaentry>
 	<question><para>
-		Why can't I use hostnames for target names?
+		I don't want any messages mailed to me. How can I turn them off?
 	</para></question>
-	<answer><para>
-		Because it would be very hard to interpret results if the
-		hostname resolves to more than one IP address.
-	</para></answer>
+</qandaentry>
+<qandaentry>
+	<question><para>
+		How can I graph apinger measurements?
+	</para></question>
 </qandaentry>
 
 
