@@ -1,5 +1,10 @@
 2002-09-24  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: - Version: 0.4-test2
+
+	* src/apinger.c:
+	- read the current time just before calculating poll() timeout
+
 	* src/main.c: - free allocated config memory
 	- some over valgrind-found bugs
 
