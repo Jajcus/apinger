@@ -74,7 +74,7 @@ void signal_handler(int signum){
 }
 
 void usage(const char *name){
-	fprintf(stderr,"Alarm Pinger 1.0 (c) 2002 Jacek Konieczny <jajcus@pld.org.pl>\n");
+	fprintf(stderr,"Alarm Pinger " PACKAGE_VERSION " (c) 2002 Jacek Konieczny <jajcus@pld.org.pl>\n");
 	fprintf(stderr,"Usage:\n");
 	fprintf(stderr,"\t%s [OPTIONS]\n",name);
 	fprintf(stderr,"\nOPTIONS:\n");
