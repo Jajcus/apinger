@@ -1,0 +1,2 @@
+This directory is for patches from apinger users.
+Do not add it to EXTRA_DIST in the Makefile.am
