@@ -1,6 +1,7 @@
 # Process this file with autoconf to produce a configure script.
-AC_INIT([src/apinger.c])
-AM_INIT_AUTOMAKE(apinger, 0.2-test5, jajcus@pld.org.pl)
+AC_INIT([apinger], [0.2], [jajcus@pld.org.pl])
+AC_CONFIG_SRCDIR([src/apinger.c])
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
 
 # Checks for programs.
