@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.14 2002/10/01 08:14:35 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.15 2002/10/01 09:10:12 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -119,6 +119,8 @@ void send_icmp6_probe(struct target *t,struct timeval *cur_time,int seq);
 
 void analyze_reply(struct timeval time_recv,int seq,struct trace_info *ti);
 void main_loop(void);
+
+const char * subst_macros(const char *string,struct target *t,struct alarm_cfg *a,int on);
 
 extern volatile int interrupted_by;
 extern volatile int reload_request;
