@@ -5,7 +5,6 @@ AM_CONFIG_HEADER([config.h])
 
 # Checks for programs.
 AC_PROG_YACC
-AC_PROG_CXX
 AC_PROG_CC
 AM_PROG_LEX
 
