@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: rrd.c,v 1.2 2002/10/03 13:24:16 cvs-jajcus Exp $
+ *  $Id: rrd.c,v 1.3 2002/10/16 08:19:38 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -221,4 +221,10 @@ int num_esc;
 	printf("<P><b>apinger</b> by Jacek Konieczny</P>\n");
 	printf("</BODY></HTML>\n");
 	return 0;
+}
+
+void rrd_close(void){
+
+	if (rrdtool_pipe)
+		pclose(rrdtool_pipe);
 }
