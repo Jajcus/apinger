@@ -7,8 +7,8 @@ SOURCES=main.c apinger.c config.c icmp.c icmp6.c
 OBJS=$(SOURCES:.c=.o)
 .SUFFIXES: .y .yy .c .o
 
-cfgtest: cfgparser.yy.o cfgparser.tab.o
-	gcc -o $@ cfgparser.yy.o cfgparser.tab.o -lfl 
+cfgtest: cfgparser.yy.o cfgparser.tab.o conf.o
+	gcc -o $@ cfgparser.yy.o cfgparser.tab.o conf.o -lfl 
 	
 cfgparser.yy.o: cfgparser.yy.c cfgparser.tab.h
 

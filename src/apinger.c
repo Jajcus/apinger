@@ -104,6 +104,7 @@ struct timeval tv;
 double delay,avg_delay,avg_loss;
 double tmp;
 int i;
+int previous_received;
 
 	if (icmp_seq!=(ti->seq%65536)){
 		debug("Sequence number mismatch.");
@@ -117,11 +118,12 @@ int i;
 		log("Couldn't match any target to the echo reply.\n");
 		return;
 	}
+	previous_received=t->last_received;
+	if (ti->seq>t->last_received) t->last_received=ti->seq;
 	timersub(&time_recv,&ti->timestamp,&tv);
 	delay=tv.tv_sec*1000.0+((double)tv.tv_usec)/1000.0;
 	debug("#%i from %s(%s) delay: %4.2fms",ti->seq,t->desc,t->name,delay);
-	if (ti->seq>t->last_received) t->last_received=ti->seq;
-	if (t->alarm_down && ti->seq > t->last_received){
+	if (t->alarm_down && ti->seq > previous_received){
 		toggle_alarm(t,"down",0);
 		t->alarm_down=0;
 	}

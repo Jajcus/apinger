@@ -12,19 +12,22 @@ void yyerror(const char *s);
 int yylex(void);
 
 extern FILE *yyin, *yyout;
-struct config config={NULL,NULL,NULL,NULL,NULL,0};
+struct config cur_config={NULL,NULL,NULL,NULL,NULL,0};
 struct alarm_cfg *cur_alarm;
 struct target_cfg *cur_target;
 
-void add_alarm(enum alarm_type type);
-void add_target(void);
-struct alarm_list *alarm2list(const char *aname,struct alarm_list *list);
 
 %}
 
+%verbose
+%locations
+%expect 12
 %union {
 	int i;
 	char *s;
+	struct alarm_cfg *a;
+	struct target_cfg *t;
+	struct config *c;
 	struct alarm_list *al;
 }
 
@@ -57,44 +60,32 @@ struct alarm_list *alarm2list(const char *aname,struct alarm_list *list);
 %token ALARMS
 %token INTERVAL
 
+%token ERROR
+
 %type <s> string
 %type <al> alarmlist
-
-%expect 12
+%type <a> makealarm
+%type <t> maketarget
 
 %%
 
 config:	/* */
-	| DEBUG BOOLEAN { config.debug=$2; }
+	| DEBUG BOOLEAN { cur_config.debug=$2; }
 	| alarm 
 	| target 
 	| config separator config
 ;
 
-makealarm: 	{ 
-	 		struct pool_item *p;
-	 		cur_alarm=(struct alarm_cfg*)malloc(sizeof(struct alarm_cfg));
-			memset(cur_alarm,0,sizeof(struct alarm_cfg));
-			p=(struct pool_item*)malloc(sizeof(struct pool_item));
-			p->ptr=cur_alarm;
-			p->next=config.pool;
-		}
+makealarm: 	{ $$=make_alarm(); } 
 ;
 
-maketarget: 	{ 
-	 		struct pool_item *p;
-	 		cur_target=(struct target_cfg*)malloc(sizeof(struct target_cfg));
-			memset(cur_target,0,sizeof(struct target_cfg));
-			p=(struct pool_item*)malloc(sizeof(struct pool_item));
-			p->ptr=cur_target;
-			p->next=config.pool;
-		}
+maketarget: 	{ $$=make_target(); }
 ;
 
 alarm:	ALARM makealarm DEFAULT '{' alarmcommoncfg '}' 
      		{ 
 			cur_alarm->name="default";
-			config.alarm_defaults=cur_alarm; 
+			cur_config.alarm_defaults=cur_alarm; 
 		}
      	| ALARM makealarm DOWN string '{' alarmdowncfg '}' 
 		{ 
@@ -152,7 +143,7 @@ alarmcommon: /* */
 target:	TARGET maketarget DEFAULT '{' targetcfg '}' 
       		{ 
 			cur_target->name="default";
-			config.target_defaults=cur_target; 
+			cur_config.target_defaults=cur_target; 
 		}
      	| TARGET maketarget string '{' targetcfg '}' 
 		{ 
@@ -177,13 +168,7 @@ alarmlist: string
 		{ $$=alarm2list($3,$1); }
 ;
 
-string: STRING	{ char *s; struct pool_item *p;
-      			s=strdup($1);
-			p=(struct pool_item*)malloc(sizeof(struct pool_item));
-			p->ptr=s;
-			p->next=config.pool;
-			$$=s;
-		}
+string: STRING	{ $$=pool_strdup(&cur_config.pool,$1); }
 ;
 
 separator: '\n'
@@ -196,44 +181,12 @@ void yyerror (const char *s) {
 	printf ("%s\n", s);
 }
 
-void add_alarm(enum alarm_type type){
-	cur_alarm->type=type;
-	cur_alarm->next=config.alarms;
-	config.alarms=cur_alarm;
-	cur_alarm=NULL;
-}
-
-void add_target(void){
-	cur_target->next=config.targets;
-	config.targets=cur_target;
-	cur_target=NULL;
-}
-
-struct alarm_list *alarm2list(const char *aname,struct alarm_list *list){
-struct alarm_cfg *ac;
-struct alarm_list *al; 
-struct pool_item *p;
-
-	for(ac=config.alarms;ac!=NULL;ac=ac->next)
-		if (strcmp(ac->name,aname)==0) break;
-	if (ac==NULL){
-		fprintf(stderr,"Alarm '%s' not found.\n",aname);
-		return list;
-	}
-	al=malloc(sizeof(struct alarm_list));
-	p=malloc(sizeof(struct pool_item));
-	p->ptr=al;
-	p->next=config.pool;
-	al->alarm=ac;
-	al->next=list;
-	return al;
-}
-
 int main( int argc, char *argv[] ){
 int ret;
 
 	yyin=fopen("/etc/apinger.conf","r");
-	yydebug=1;
+	yydebug=0;
+	memset(&yylloc,0,sizeof(yylloc));
 	ret=yyparse();
 	return 0;
 }

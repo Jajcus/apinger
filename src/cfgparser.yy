@@ -2,16 +2,25 @@
 %{
 #include <math.h>
 #include "cfgparser.tab.h"
+
+#define LOC yylloc.first_line=yylloc.last_line; yylloc.first_column=yylloc.last_column
+#define LOCINC yylloc.last_column+=yyleng
+
+extern YYLTYPE yylloc;
 %}
 
 DIGIT	[0-9]
 
 %%
-{DIGIT}+ 		{ yylval.i=atoi(yytext); return INTEGER; }
+
+{DIGIT}+ 		{ LOC; LOCINC; yylval.i=atoi(yytext); return INTEGER; }
 
 {DIGIT}+("."{DIGIT}+)?(([um]?s)|m|h) { 
 			double f;
 			double mn=1;
+
+			LOC;
+			LOCINC; 
 			
 			if (yyleng>1 && yytext[yyleng-1]=='h'){
 				yytext[yyleng-1]='\000';
@@ -37,38 +46,39 @@ DIGIT	[0-9]
 			yylval.i=f; return TIME;
 		}
 
-debug		{ return DEBUG; }
-alarm		{ return ALARM; }
-target		{ return TARGET; }
-default		{ return DEFAULT; }
-mailto		{ return MAILTO; }
-mailfrom	{ return MAILFROM; }
-mailenvfrom	{ return MAILENVFROM; }
-down		{ return DOWN; }
-loss		{ return LOSS; }
-delay		{ return DELAY; }
-samples		{ return SAMPLES; }
-percent_low	{ return PERCENT_LOW; }
-percent_high	{ return PERCENT_HIGH; }
-delay_low	{ return DELAY_LOW; }
-delay_high	{ return DELAY_HIGH; }
-description	{ return DESCRIPTION; }
-alarms		{ return ALARMS; }
-interval	{ return INTERVAL; }
+debug		{ LOC; LOCINC; return DEBUG; }
+alarm		{ LOC; LOCINC; return ALARM; }
+target		{ LOC; LOCINC; return TARGET; }
+default		{ LOC; LOCINC; return DEFAULT; }
+mailto		{ LOC; LOCINC; return MAILTO; }
+mailfrom	{ LOC; LOCINC; return MAILFROM; }
+mailenvfrom	{ LOC; LOCINC; return MAILENVFROM; }
+down		{ LOC; LOCINC; return DOWN; }
+loss		{ LOC; LOCINC; return LOSS; }
+delay		{ LOC; LOCINC; return DELAY; }
+samples		{ LOC; LOCINC; return SAMPLES; }
+percent_low	{ LOC; LOCINC; return PERCENT_LOW; }
+percent_high	{ LOC; LOCINC; return PERCENT_HIGH; }
+delay_low	{ LOC; LOCINC; return DELAY_LOW; }
+delay_high	{ LOC; LOCINC; return DELAY_HIGH; }
+description	{ LOC; LOCINC; return DESCRIPTION; }
+alarms		{ LOC; LOCINC; return ALARMS; }
+interval	{ LOC; LOCINC; return INTERVAL; }
 
-on|true|yes	{ yylval.i=1; return BOOLEAN; }
-off|false|no	{ yylval.i=0; return BOOLEAN; }
+on|true|yes	{ LOC; LOCINC; yylval.i=1; return BOOLEAN; }
+off|false|no	{ LOC; LOCINC; yylval.i=0; return BOOLEAN; }
 
-\"[^"]*\"		{ yytext[yyleng-1]='\000'; yylval.s=yytext+1; return STRING; }
+\"[^"\n]*\"	{ LOC; LOCINC; yytext[yyleng-1]='\000'; yylval.s=yytext+1; return STRING; }
 
-[{}\n;,]	{ return yytext[0]; }
+[{};,]		{ LOC; LOCINC; return yytext[0]; }
+\n		{ LOC; yylloc.last_line++; yylloc.last_column=0; return '\n'; }
 
-"//"[^\n]*	/* eat up one-line comments */
-"#"[^\n]*	/* eat up one-line comments */
+"//"[^\n]*	{ LOC; LOCINC; } 
+"#"[^\n]*	{ LOC; LOCINC; }
 
-[ \t]+		/* eat up whitespace */
+[ \t]+		{ LOC; LOCINC; }
 
-.           printf( "Unrecognized character: %s\n", yytext );
+.           	{ LOC; LOCINC; yylval.s=yytext; return ERROR; }
 
 %%
 

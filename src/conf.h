@@ -2,9 +2,14 @@
 #define conf_h
 
 struct pool_item {
-	void *ptr;
 	struct pool_item *next;
 };
+
+void *pool_malloc(struct pool_item **pool,size_t size);
+char *pool_strdup(struct pool_item **pool,const char *str);
+void pool_free(struct pool_item **pool,void *ptr);
+void pool_clear(struct pool_item **pool);
+
 
 struct default_cfg {
 	char *mailto;
@@ -58,5 +63,15 @@ struct config {
 	struct target_cfg *targets;
 	int debug;
 };
+
+extern struct config cur_config;
+extern struct alarm_cfg *cur_alarm;
+extern struct target_cfg *cur_target;
+
+struct alarm_cfg * make_alarm();
+struct target_cfg * make_target();
+void add_alarm(enum alarm_type type);
+void add_target(void);
+struct alarm_list *alarm2list(const char *aname,struct alarm_list *list);
 
 #endif
