@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.24 2002/09/24 11:37:53 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.25 2002/09/24 12:32:49 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -821,6 +821,7 @@ struct alarm_cfg *a;
 		}
 		strftime(buf,100,"%b %d %H:%M:%S",localtime(&next_probe.tv_sec));
 		debug("Next event scheduled for %s",buf);
+		gettimeofday(&cur_time,NULL);
 		if (timercmp(&next_probe,&cur_time,<)){
 			timeout=0;
 		}
