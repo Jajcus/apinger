@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.37 2002/11/05 14:22:20 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.38 2002/12/19 08:17:47 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -743,6 +743,7 @@ struct alarm_cfg *a;
 time_t tm;
 int i,qp,really_lost;
 char *buf1,*buf2;
+int err=0;
 
 	if (config->status_file==NULL) return;
 	
@@ -810,6 +811,7 @@ char *buf1,*buf2;
 			fprintf(f,"   lost packet count mismatch (%i!=%i)!\n",t->recently_lost,really_lost);
 			logit("%s: Lost packet count mismatch (%i!=%i)!",t->name,t->recently_lost,really_lost);
 			logit("%s: Received packets buffer: %s %s\n",t->name,buf2,buf1);
+			err=1;
 		}
 		free(buf1);
 		free(buf2);
@@ -817,6 +819,7 @@ char *buf1,*buf2;
 		fprintf(f,"\n");
 	}
 	fclose(f);
+	if (err) abort();
 }
 
 #ifdef FORKED_RECEIVER
