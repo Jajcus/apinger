@@ -1,5 +1,10 @@
 2002-07-18  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* NEWS, README, TODO: - updates for v. 0.3
+
+	* src/apinger.c, src/apinger.conf, src/cfgparser1.y, src/cfgparser2.l, src/conf.c, src/conf.h, src/main.c:
+	- configurable subject and "%s" (timestamp) macro
+
 	* src/conf.h, src/apinger.c: - support for mail message threading
 
 	* TODO: - +1
