@@ -1,7 +1,8 @@
 - fix bugs
 - add more configurable messages
+- improve config file parser, so multi-line strings with control characters may be used
 - dependency between targets (eg. don't report "down" alarm on server, when router is down)
 - rrdtool statistics generation support
 
 --
-$Id: TODO,v 1.8 2002/07/18 10:42:38 cvs-jajcus Exp $
+$Id: TODO,v 1.9 2002/07/19 12:06:09 cvs-jajcus Exp $

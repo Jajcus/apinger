@@ -2,9 +2,13 @@
 
 	Main changes from 0.2:
 
+		- file with status of targets may be written
 		- configurable mail subject
-		- external commands may be executed when alarm if fired/cancelled
+		- external commands may be executed when alarm if fired/canceled
 		- mailer (with custom options) may be configured
+		- Message-Id and References headers are generated for mail messages
+		  so "ALARM" and "alarm-canceled" messages may be paired together
+		  by threading MUA
 
 * Version 0.2
 
@@ -20,4 +24,4 @@
 	This is the initial release
 
 --
-$Id: NEWS,v 1.5 2002/07/18 10:42:38 cvs-jajcus Exp $
+$Id: NEWS,v 1.6 2002/07/19 12:06:09 cvs-jajcus Exp $
