@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.26 2002/09/25 10:11:14 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.27 2002/09/26 09:06:27 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -854,7 +854,6 @@ struct alarm_cfg *a;
 			timersub(&next_probe,&cur_time,&tv);
 			timeout=tv.tv_usec/1000+tv.tv_sec*1000;
 		}
-		if (timeout>8000) raise(SIGINT);
 		debug("Polling, timeout: %5.3fs",((double)timeout)/1000);
 		poll(pfd,npfd,timeout);
 		for(i=0;i<npfd;i++){
