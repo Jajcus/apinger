@@ -1,5 +1,8 @@
 2002-07-15  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* src/apinger.c, src/icmp.c, src/icmp6.c, acinclude.m4:
+	- still portability fixes
+
 	* configure.ac: - verison changed to "0.2-test"
 
 	* Makefile.am: - BUGS file added
