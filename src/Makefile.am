@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.11 2002/10/03 12:37:09 cvs-jajcus Exp $
+# $Id: Makefile.am,v 1.12 2003/03/26 11:34:06 cvs-jajcus Exp $
 
 EXTRA_DIST = cfgparser1.h apinger.conf
 EXTRA_PROGRAMS = cfgtest
@@ -29,4 +29,4 @@ cfgtest_SOURCES = \
 
 AM_CFLAGS=-D"SYSCONFDIR=\"$(sysconfdir)\""
 
-YFLAGS=-d
+AM_YFLAGS=-d
