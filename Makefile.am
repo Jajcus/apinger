@@ -1,4 +1,4 @@
 
-EXTRA_DIST = autogen.sh TODO
+EXTRA_DIST = autogen.sh TODO BUGS
 
 SUBDIRS = src
