@@ -1,5 +1,9 @@
 2002-07-16  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: - version: 0.2-test3
+
+	* src/Makefile.am: - tv_macros.h added to sources
+
 	* configure.ac: - version test2
 
 	* src/apinger.c, src/tv_macros.h:
