@@ -1,4 +1,6 @@
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
 #include "conf.h"
 
 struct config default_config={

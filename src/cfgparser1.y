@@ -1,8 +1,13 @@
 
 %{
+
 #include <stdio.h>
-#include <malloc.h>
-#include <string.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
 #include "conf.h"
 #include "debug.h"
 
@@ -84,7 +89,7 @@ config:	/* */
 	| config separator config
 	| error
 		{
-			log("Configuration file syntax error. Line %i, character %i",
+			logit("Configuration file syntax error. Line %i, character %i",
 					@$.first_line+1,@$.first_column+1);
 			YYABORT;
 		}
@@ -204,6 +209,6 @@ separator: '\n'
 
 %%
 void yyerror (const char *s) {
-	log("%s", s);
+	logit("%s", s);
 }
 

@@ -2,9 +2,10 @@
 #define apinger_h
 
 #define CONFIG "/etc/apinger.conf"
-#define MAX_POLL_TIMEOUT 10000
 
-#include <netinet/in.h>
+#ifdef HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif
 #include "conf.h"
 
 union addr {

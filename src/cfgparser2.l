@@ -87,7 +87,7 @@ off|false|no	{ LOC; LOCINC; yylval.i=0; return BOOLEAN; }
 [ \t]+		{ LOC; LOCINC; }
 
 .           	{ LOC; LOCINC; yylval.s=yytext; 
-		  log("Configuration file syntax error. Line %i, character %i ('%c')",
+		  logit("Configuration file syntax error. Line %i, character %i ('%c')",
 					yylloc.first_line+1,yylloc.first_column+1,yytext[0]);
 		  return ERROR;
 		}

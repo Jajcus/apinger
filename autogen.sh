@@ -3,5 +3,5 @@ aclocal
 autoheader
 automake -a -c
 autoconf
-./configure $*
+./configure CFLAGS="-ggdb -Wall" $*
 

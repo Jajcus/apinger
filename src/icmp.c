@@ -1,8 +1,35 @@
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netinet/ip_icmp.h>
-#include <netinet/ip.h>
-#include <sys/time.h>
+#include "config.h"
+
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#ifdef HAVE_TIME_H
+# include <time.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+# include <arpa/inet.h>
+#endif
+#ifdef HAVE_NETINET_IP_ICMP_H
+# include <netinet/ip_icmp.h>
+#endif
+#ifdef HAVE_NETINET_IP_H
+# include <netinet/ip.h>
+#endif
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
+#endif
 #include "apinger.h"
 #include "debug.h"
 

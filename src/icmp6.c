@@ -1,14 +1,39 @@
 #include "config.h"
-#if defined HAVE_NETINET_IP6_H && defined HAVE_NETINET_ICMP6_H
-#include <sys/socket.h>
-#include <netinet/in.h>
-#ifdef AF_INET6
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
+#ifdef HAVE_IPV6
+
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
-#include <netinet/icmp6.h>
-#include <netinet/ip6.h>
+#endif
+#ifdef HAVE_TIME_H
+#include <time.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+# include <netinet/in.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
+# include <arpa/inet.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_NETINET_ICMP6_H
+# include <netinet/icmp6.h>
+#endif
+#ifdef HAVE_NETINET_IP6_H
+# include <netinet/ip6.h>
+#endif
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
+#endif
 #include "apinger.h"
 #include "debug.h"
 
@@ -71,7 +96,7 @@ int ret;
 	}
 }
 
-void recv_icmp6(){
+void recv_icmp6(void){
 int len,icmplen,datalen;
 char buf[1024];
 char abuf[100];
@@ -122,5 +147,11 @@ int opt;
 	return icmp6_sock;
 }
 
-#endif /* AF_INET6 */
-#endif /* defined(NETINET_IP6_H) && defined(NETINET_ICMP6_H) */
+#else /*HAVE_IPV6*/
+#include "apinger.h"
+
+int make_icmp6_socket(void){ return -1; }
+void recv_icmp6(void){}
+void send_icmp6_probe(struct target *t,struct timeval *cur_time,int seq){}
+
+#endif /*HAVE_IPV6*/

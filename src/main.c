@@ -1,9 +1,22 @@
-#include <ctype.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <pwd.h>
-#include <grp.h>
+#include "config.h"
+
+#include <stdio.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_SIGNAL_H
+# include <signal.h>
+#endif
+#ifdef HAVE_PWD_H
+# include <pwd.h>
+#endif
+#ifdef HAVE_GRP_H
+# include <grp.h>
+#endif
+
 #include "apinger.h"
 #include "conf.h"
 #include "debug.h"
@@ -77,7 +90,7 @@ int c;
 FILE *pidfile;
 pid_t pid;
 int i;
-int debug=0;
+int do_debug=0;
 int stay_foreground=0;
 
 	while((c=getopt(argc,argv,"fdh")) != -1){
@@ -86,27 +99,23 @@ int stay_foreground=0;
 				stay_foreground=1;
 				break;
 			case 'd':
-				debug=1;
+				do_debug=1;
 				break;
 			case 'h':
 				usage(argv[0]);
 				return 1;
 			case '?':
-				if (isprint (optopt))
-					fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-				else
-				        fprintf (stderr, "Unknown option character `\\x%x'.\n",
-							optopt);
+				fprintf (stderr, "Unknown option `-%c'.\n", optopt);
 				return 1;
 			default:
 				return 1;
 		}
 	}
 	if (load_config(CONFIG)){
-		log("Couldn't read config (\"%s\").",CONFIG);
+		logit("Couldn't read config (\"%s\").",CONFIG);
 		return 1;
 	}
-	if (debug) config->debug=1;
+	if (do_debug) config->debug=1;
 
 	if (!stay_foreground){
 		pidfile=fopen(config->pid_file,"r");
@@ -189,7 +198,7 @@ int stay_foreground=0;
 	if (icmp_sock>=0) close(icmp_sock);
 	if (icmp6_sock>=0) close(icmp6_sock);
 
-	log("Exiting on signal %i.",interrupted_by);
+	logit("Exiting on signal %i.",interrupted_by);
 
 	if (!foreground){
 		/*clear the pid file*/

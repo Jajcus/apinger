@@ -1,9 +1,31 @@
-#include <stdlib.h>
+#include "config.h"
+#include <stdio.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef HAVE_STRING_H
+# include <string.h>
+#endif
 #include <time.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/poll.h>
+#ifdef HAVE_SYS_WAIT_H
+# include <sys/wait.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#ifdef HAVE_SYS_POLL_H
+# include <sys/poll.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
+#ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
+#endif
+
 #include "apinger.h"
 #include "conf.h"
 #include "debug.h"
@@ -48,7 +70,7 @@ struct alarm_list *al,*pa,*na;
 		}
 		else pa=al;
 	}
-	log("Alarm '%s' not found in '%s'",a->name,t->name);
+	logit("Alarm '%s' not found in '%s'",a->name,t->name);
 }
 
 void toggle_alarm(struct target *t,struct alarm_cfg *a,int on){
@@ -60,15 +82,15 @@ char *mailto,*mailfrom,*mailenvfrom;
 
 
 	if (on>0){
-		log("ALARM: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
+		logit("ALARM: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
 		alarm_on(t,a);
 	}
 	else{
 		alarm_off(t,a);
 		if (on==0)
-			log("alarm cancelled: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
+			logit("alarm cancelled: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
 		else
-			log("alarm cancelled (config reload): %s(%s)  *** %s ***",t->config->description,t->name,a->name);
+			logit("alarm cancelled (config reload): %s(%s)  *** %s ***",t->config->description,t->name,a->name);
 	}
 
 	mailto=a->mailto;
@@ -122,13 +144,13 @@ char *mailto,*mailfrom,*mailenvfrom;
 		}
 		ret=pclose(p);
 		if (!WIFEXITED(ret)){
-			log("Error while sending mail.\n");
-			log("sendmail terminated abnormally.\n");
+			logit("Error while sending mail.\n");
+			logit("sendmail terminated abnormally.\n");
 			return;
 		}
 		if (WEXITSTATUS(ret)!=0){
-			log("Error while sending mail.\n");
-			log("sendmail exited with status: %i\n",WEXITSTATUS(ret));
+			logit("Error while sending mail.\n");
+			logit("sendmail exited with status: %i\n",WEXITSTATUS(ret));
 			return;
 		}
 	}
@@ -148,7 +170,9 @@ int seq;
 	strftime(buf,100,"%b %d %H:%M:%S",localtime(&t->next_probe.tv_sec));
 	debug("Next one scheduled for %s",buf);
 	if (t->addr.addr.sa_family==AF_INET) send_icmp_probe(t,cur_time,seq);
+#ifdef HAVE_IPV6
 	else if (t->addr.addr.sa_family==AF_INET6) send_icmp6_probe(t,cur_time,seq);
+#endif
 
 	if (t->last_sent>=t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
 		i=t->last_sent%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
@@ -196,7 +220,7 @@ struct alarm_cfg *a;
 		if (t==ti->target_id) break;
 	}
 	if (t==NULL){
-		log("Couldn't match any target to the echo reply.\n");
+		logit("Couldn't match any target to the echo reply.\n");
 		return;
 	}
 	previous_received=t->last_received;
@@ -290,24 +314,28 @@ int r;
 			r=inet_pton(AF_INET,tc->name,&addr.addr4.sin_addr);
 			if (r){
 				if (icmp_sock<0){
-					log("Sorry, IPv4 is not available\n");
-					log("Ignoring target %s\n",tc->name);
-					break;
+					logit("Sorry, IPv4 is not available\n");
+					logit("Ignoring target %s\n",tc->name);
+					continue;
 				}
 				addr.addr.sa_family=AF_INET;
 			}else{
+#ifdef HAVE_IPV6
 				r=inet_pton(AF_INET6,tc->name,&addr.addr6.sin6_addr);
 				if (r==0){
-					log("Bad host address: %s\n",tc->name);
-					log("Ignoring target %s\n",tc->name);
-					break;
+#endif
+					logit("Bad host address: %s\n",tc->name);
+					logit("Ignoring target %s\n",tc->name);
+					continue;
+#ifdef HAVE_IPV6
 				}
 				if (icmp6_sock<0){
-					log("Sorry, IPv6 is not available\n");
-					log("Ignoring target %s\n",tc->name);
-					break;
+					logit("Sorry, IPv6 is not available\n");
+					logit("Ignoring target %s\n",tc->name);
+					continue;
 				}
 				addr.addr.sa_family=AF_INET6;
+#endif
 			}
 			t=(struct target *)malloc(sizeof(struct target));
 			memset(t,0,sizeof(struct target));
@@ -334,6 +362,10 @@ int r;
 			t->rbuf=(double *)malloc(sizeof(double)*(tc->avg_delay_samples));
 		assert(t->rbuf!=NULL);
 	}
+	if (targets==NULL){
+		logit("No usable targets found, exiting");
+		exit(1);
+	}
 }
 
 void reload_config(void){
@@ -342,7 +374,7 @@ struct alarm_list *al,*an;
 struct alarm_cfg *a;
 int r;
 	
-	log("SIGHUP received, reloading configuration","");
+	logit("SIGHUP received, reloading configuration");
 	for(t=targets;t;t=t->next)
 		for(al=t->active_alarms;al;al=an){
 			an=al->next;
@@ -385,6 +417,7 @@ struct alarm_cfg *a;
 				a=al->alarm;
 				nal=al->next;
 				if (a->type!=AL_DOWN || is_alarm_on(t,a)) continue;
+				if (!timerisset(&t->last_received_tv)) continue;
 				timersub(&cur_time,&t->last_received_tv,&tv);
 				downtime=tv.tv_sec*1000+tv.tv_usec/1000;
 				if ( downtime > a->p.val)
@@ -405,8 +438,6 @@ struct alarm_cfg *a;
 		else{
 			timersub(&next_probe,&cur_time,&tv);
 			timeout=tv.tv_usec/1000+tv.tv_sec*1000;
-			if (timeout>MAX_POLL_TIMEOUT)
-				timeout=MAX_POLL_TIMEOUT;
 		}
 		debug("Polling, timeout: %5.3fs",((double)timeout)/1000);
 		poll(pfd,npfd,timeout);

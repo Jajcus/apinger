@@ -13,7 +13,8 @@ apinger_SOURCES = \
 		debug.h \
 		icmp.c \
 		icmp6.c \
-		main.c
+		main.c \
+		debug.c
 
 cfgtest_SOURCES = \
 		cfgparser1.y \
