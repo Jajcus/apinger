@@ -33,7 +33,7 @@
 </qandaentry>
 <qandaentry>
 	<question><para>
-		Does Alarm Pinger use TCP/UDP/anything instead of ICMP for
+		Can Alarm Pinger use TCP/UDP/anything instead of ICMP for
 		pinging?
 	</para></question>
 	<answer><para>
@@ -50,17 +50,18 @@
 		hostname resolves to more than one IP address.
 	</para></answer>
 </qandaentry>
+
 <qandaentry>
 	<question><para>
 		I don't want any messages mailed to me. How can I turn them off?
 	</para></question>
 </qandaentry>
+
 <qandaentry>
 	<question><para>
 		How can I graph apinger measurements?
 	</para></question>
 </qandaentry>
-
 
 </qandaset>
 </article>
