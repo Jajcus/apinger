@@ -1,3 +1,12 @@
+2002-09-25  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* configure.ac: - Version: 0.4-test3
+
+	* NEWS, README: - Updates
+
+	* src/apinger.c, src/apinger.conf, src/apinger.h, src/cfgparser1.y, src/cfgparser2.l, src/conf.c, src/conf.h, src/main.c:
+	- 'repeat' configuration option (for repeating alarm actions)
+
 2002-09-24  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* configure.ac: - Version: 0.4-test2
