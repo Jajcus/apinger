@@ -1,3 +1,13 @@
+2002-10-21  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/apinger.c: - do not duplicate targets in delayed alarms
+
+	* doc/FAQ.xml: - more questions
+
+	* configure.ac: - do not use forked receiver for default
+
+	* Makefile.am: - doc subdirectory
+
 2002-10-18  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* doc/FAQ.xml, doc/Makefile.am: - documentation framework
