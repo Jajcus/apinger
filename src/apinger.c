@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.20 2002/07/18 13:25:54 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.21 2002/07/19 12:05:46 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -150,10 +150,10 @@ time_t tim;
 		case 'r':
 			switch(on){
 			case -1:
-				values[n]="alarm cancelled (config reload)";
+				values[n]="alarm canceled (config reload)";
 				break;
 			case 0:
-				values[n]="alarm cancelled";
+				values[n]="alarm canceled";
 				break;
 			default:
 				values[n]="ALARM";
@@ -236,7 +236,7 @@ time_t tm;
 	if (on)
 		fprintf(f,"ALARM went off: %s\n",a->name);
 	else
-		fprintf(f,"alarm cancelled: %s\n",a->name);
+		fprintf(f,"alarm canceled: %s\n",a->name);
 	fprintf(f,"Target: %s\n",t->name);
 	fprintf(f,"Description: %s\n",t->config->description);
 	fprintf(f,"Probes sent: %i\n",t->last_sent+1);
@@ -268,9 +268,9 @@ unsigned thisid,lastid;
 	else{
 		lastid=alarm_off(t,a);
 		if (on==0)
-			logit("alarm cancelled: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
+			logit("alarm canceled: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
 		else
-			logit("alarm cancelled (config reload): %s(%s)  *** %s ***",t->config->description,t->name,a->name);
+			logit("alarm canceled (config reload): %s(%s)  *** %s ***",t->config->description,t->name,a->name);
 	}
 
 	mailto=a->mailto;
