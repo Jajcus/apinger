@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.14 2002/07/26 08:39:13 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.15 2002/09/24 11:39:42 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -163,8 +163,8 @@ int stay_foreground=0;
 	if (!stay_foreground){
 		pidfile=fopen(config->pid_file,"r");
 		if (pidfile){
-			fscanf(pidfile,"%d",&pid);
-			if (pid>0 && kill(pid,0)==0){
+			int n=fscanf(pidfile,"%d",&pid);
+			if (n>0 && pid>0 && kill(pid,0)==0){
 				fprintf(stderr,"pinger already running\n");
 				return 1;
 			}
@@ -209,6 +209,7 @@ int stay_foreground=0;
 			fprintf(pidfile,"%i\n",pid);
 			fchown(fileno(pidfile),pw->pw_uid,gr?gr->gr_gid:pw->pw_gid);
 			fclose(pidfile);
+			free_config();
 			exit(0);
 		}
 		foreground=0;
@@ -218,7 +219,7 @@ int stay_foreground=0;
 		setsid();	
 	}
 	
-	if (initgroups("pinger",pw->pw_gid)){
+	if (initgroups(pw->pw_name,pw->pw_gid)){
 		myperror("initgroups");
 		return 1;
 	}
@@ -250,6 +251,8 @@ int stay_foreground=0;
 		/* try to remove it. Most probably this will fail */
 		unlink(config->pid_file);
 	}
+
+	free_config();
 
 	return 0;
 }
