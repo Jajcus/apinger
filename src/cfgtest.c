@@ -1,4 +1,4 @@
-#include <unistd.h>
+#include <stdlib.h>
 #include "conf.h"
 
 struct config default_config={

@@ -1,13 +1,18 @@
+#include <stdlib.h>
 #include <time.h>
 #include <sys/wait.h>
 #include <sys/time.h>
 #include <sys/poll.h>
-#include <malloc.h>
 #include <arpa/inet.h>
-#include <assert.h>
 #include "apinger.h"
 #include "conf.h"
 #include "debug.h"
+
+#ifdef HAVE_ASSERT_H
+# include <assert.h>
+#else
+# define assert(cond)
+#endif
 
 int is_alarm_on(struct target *t,struct alarm_cfg *a){
 struct alarm_list *al;

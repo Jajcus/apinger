@@ -1,9 +1,14 @@
-#include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include <malloc.h>
 #include <string.h>
 #include "conf.h"
 #include "cfgparser1.h"
+
+#ifdef HAVE_ASSERT_H
+# include <assert.h>
+#else
+# define assert(cond)
+#endif
 
 struct config * config=NULL;
 
@@ -47,7 +52,7 @@ struct pool_item *pi,*pi1;
 		pi1=pi;
 	}
 	fprintf(stderr,"poll_free: pointer not from the pool\n");
-	abort(1);
+	exit(1);
 }
 
 void pool_clear(struct pool_item **pool){
@@ -115,6 +120,7 @@ struct alarm_list *al;
 int ret;
 
 	yyin=fopen(filename,"r");
+	if (yyin==NULL) return -1;
 	yydebug=0;
 	memset(&yylloc,0,sizeof(yylloc));
 	cur_config=default_config;	

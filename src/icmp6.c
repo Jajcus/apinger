@@ -1,16 +1,27 @@
+#include "config.h"
+#if defined HAVE_NETINET_IP6_H && defined HAVE_NETINET_ICMP6_H
+#include <sys/socket.h>
+#include <netinet/in.h>
+#ifdef AF_INET6
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/icmp6.h>
 #include <netinet/ip6.h>
-#include <linux/types.h>
-#include <linux/filter.h>
 #include "apinger.h"
 #include "debug.h"
 
+#ifdef HAVE_LINUX_FILTER_H
+# ifdef HAVE_LINUX_TYPES_H
+#  include <linux/types.h>
+# endif
+# include <linux/filter.h>
+#endif /* HAVE_LINUX_FILTER_H */
+
 void install_filter6(){
 
+#ifdef HAVE_LINUX_FILTER_H
         static struct sock_filter insns[] = {
                 BPF_STMT(BPF_LD|BPF_H|BPF_ABS, 4),  /* Load icmp echo ident */
                 BPF_JUMP(BPF_JMP|BPF_JEQ|BPF_K, 0xAAAA, 0, 1),  /* Ours? */
@@ -29,6 +40,8 @@ void install_filter6(){
 
         if (setsockopt(icmp6_sock, SOL_SOCKET, SO_ATTACH_FILTER, &filter, sizeof(filter)))
                 myperror("WARNING: failed to install socket filter\n");
+#endif /* HAVE_LINUX_FILTER_H */
+
 }
 
 
@@ -109,3 +122,5 @@ int opt;
 	return icmp6_sock;
 }
 
+#endif /* AF_INET6 */
+#endif /* defined(NETINET_IP6_H) && defined(NETINET_ICMP6_H) */

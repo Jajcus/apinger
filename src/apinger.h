@@ -5,7 +5,6 @@
 #define MAX_POLL_TIMEOUT 10000
 
 #include <netinet/in.h>
-#include <netinet/ip6.h>
 #include "conf.h"
 
 union addr {
