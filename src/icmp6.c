@@ -54,7 +54,7 @@ int ret;
 	ret=sendto(icmp6_sock,p,size,MSG_DONTWAIT,
 			(struct sockaddr *)&t->addr.addr6,sizeof(t->addr.addr6));
 	if (ret<0){
-		myperror("sendto");
+		if (config->debug) myperror("sendto");
 	}
 }
 

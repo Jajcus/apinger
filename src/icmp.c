@@ -88,7 +88,7 @@ int ret;
 	ret=sendto(icmp_sock,p,size,MSG_DONTWAIT,
 			(struct sockaddr *)&t->addr.addr4,sizeof(t->addr.addr4));
 	if (ret<0){
-		myperror("sendto");
+		if (config->debug) myperror("sendto");
 	}
 }
 
