@@ -1,3 +1,8 @@
+2002-10-04  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/apinger.c, src/apinger.h, src/icmp.c, src/icmp6.c, src/main.c, TODO, configure.ac:
+	- "forked receiver" and other delay-measurement-precision improvements
+
 2002-10-03  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/rrd.c: - write more precise numbers to RRD
