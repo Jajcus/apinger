@@ -1,6 +1,7 @@
 - fix bugs
+- add more configurable messages
 - dependency between targets (eg. don't report "down" alarm on server, when router is down)
 - rrdtool statistics generation support
 
 --
-$Id: TODO,v 1.7 2002/07/18 09:34:14 cvs-jajcus Exp $
+$Id: TODO,v 1.8 2002/07/18 10:42:38 cvs-jajcus Exp $
