@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: rrd.c,v 1.3 2002/10/16 08:19:38 cvs-jajcus Exp $
+ *  $Id: rrd.c,v 1.4 2002/12/20 09:19:08 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -32,6 +32,9 @@
 #endif
 #ifdef HAVE_STRING_H
 # include <string.h>
+#endif
+#ifdef HAVE_STDARG_H
+# include <stdarg.h>
 #endif
 
 #define RRDTOOL_RESTART_TIME (60*5)
@@ -58,7 +61,12 @@ time_t cur_t;
 	}
 	rrdtool_waiting=0;
 	last_rrdtool_start=cur_t;
-	rrdtool_pipe=popen(RRDTOOL " - >/dev/null 2>&1","w");
+	if (foreground && config->debug){
+		rrdtool_pipe=popen(RRDTOOL " -","w");
+	}
+	else{
+		rrdtool_pipe=popen(RRDTOOL " - >/dev/null 2>&1","w");
+	}
 	if (rrdtool_pipe==NULL){
 		myperror(RRDTOOL);
 		return -1;
@@ -67,6 +75,19 @@ time_t cur_t;
 	setvbuf(rrdtool_pipe, (char *)NULL, _IOLBF, 0);
 #endif
 	return 0;	
+}
+
+int rrd_write(const char *format,...){
+va_list args;
+int ret;
+
+	va_start(args, format);
+	if (foreground && config->debug){
+		vfprintf(stderr, format, args);
+	}
+	ret=vfprintf(rrdtool_pipe,format,args);
+	va_end(args);
+	return ret;
 }
 
 void rrd_create(void){
@@ -91,7 +112,7 @@ int ret;
 #endif
 		if (rrdtool_pipe==NULL) 
 			if (rrd_init()) return;
-		ret=fprintf(rrdtool_pipe,"create %s"
+		ret=rrd_write("create %s"
 				" DS:loss:GAUGE:600:0:100"
 				" DS:delay:GAUGE:600:0:100000"
 				" RRA:AVERAGE:0.5:1:600"
@@ -121,25 +142,25 @@ int ret;
 		if (rrdtool_pipe==NULL) 
 			if (rrd_init()) return;
 		filename=subst_macros(t->config->rrd_filename,t,NULL,0);
-		ret=fprintf(rrdtool_pipe,"update %s -t loss:delay N",filename);
+		ret=rrd_write("update %s -t loss:delay N",filename);
 		if (ret>0){
 			if (t->upsent > t->config->avg_loss_delay_samples
 						+t->config->avg_loss_samples){
-				ret=fprintf(rrdtool_pipe,":%f",
+				ret=rrd_write(":%f",
 						100*((double)t->recently_lost)/
 							t->config->avg_loss_samples);
 			}
-			else ret=fprintf(rrdtool_pipe,":U");
+			else ret=rrd_write(":U");
 		}
 		if (ret>0){
 			if (t->upsent > t->config->avg_delay_samples){
-				fprintf(rrdtool_pipe,":%f",
+				rrd_write(":%f",
 						(t->delay_sum/t->config->avg_delay_samples)/1000);
 			}
-			else ret=fprintf(rrdtool_pipe,":U");
+			else ret=rrd_write(":U");
 		}
 		if (ret>0)
-			ret=fprintf(rrdtool_pipe,"\n");
+			ret=rrd_write("\n");
 		if (ret<0){
 			myperror("Error while feeding rrdtool");
 			pclose(rrdtool_pipe);
