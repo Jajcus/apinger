@@ -1,7 +1,8 @@
 #ifndef apinger_h
 #define apinger_h
 
-#define CONFIG "/etc/apinger.conf"
+#define CONFIG SYSCONFDIR "/apinger.conf"
+
 #if TIME_WITH_SYS_TIME
 # include <time.h>
 # include <sys/time.h>

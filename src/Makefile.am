@@ -17,10 +17,13 @@ apinger_SOURCES = \
 		debug.c \
 		tv_macros.h
 
+
 cfgtest_SOURCES = \
 		cfgparser1.y \
 		cfgparser2.l \
 		cfgtest.c \
 		conf.c 
+
+AM_CFLAGS=-D"SYSCONFDIR=\"$(sysconfdir)\""
 
 YFLAGS=-d
