@@ -1,3 +1,26 @@
+* Version 0.6
+
+	Main changes from 0.5:
+
+		- apinger should properly kill child processes now
+
+		- some (poor) documentation: FAQ
+
+		- duplicate targets in combined reports removed
+
+		- "forked receiver" disabled by default
+
+		- proper use of pid_file and mailer configuration options
+
+		- automatic check for loss measurements errors (caused by a bug
+		  which I was not able to fix). Apinger will abort, when the
+		  error is found! 
+
+		- IPv6 support made optional (enabled by default)
+
+		- better Message-Id and References headers in report messages
+
+
 * Version 0.5
 
 	Main changes from 0.4.1:
@@ -48,4 +71,4 @@
 	This is the initial release
 
 --
-$Id: NEWS,v 1.9 2002/10/14 10:24:58 cvs-jajcus Exp $
+$Id: NEWS,v 1.10 2002/12/20 10:34:19 cvs-jajcus Exp $
