@@ -1,3 +1,15 @@
+2002-09-24  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/main.c: - free allocated config memory
+	- some over valgrind-found bugs
+
+	* src/conf.h: - free_config() prototype added
+
+	* src/conf.c: - free all allocated memory
+
+	* src/apinger.c: - free all allocated memory (thanks to valgrind)
+	- do all mailing/piping/commands even if the previous failed
+
 2002-09-21  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/apinger.conf: - timestamp is "%s" not "%t"
