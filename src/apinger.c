@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.21 2002/07/19 12:05:46 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.22 2002/07/23 18:24:44 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -275,7 +275,7 @@ unsigned thisid,lastid;
 
 	mailto=a->mailto;
 	mailenvfrom=a->mailenvfrom;
-	if (strpbrk(mailenvfrom,"\\'")!=0)
+	if (mailenvfrom!=NULL && strpbrk(mailenvfrom,"\\'")!=0)
 		mailenvfrom=NULL;
 	mailfrom=a->mailfrom;
 	if (mailto){
