@@ -1,7 +1,7 @@
-# $Id: configure.ac,v 1.23 2002/10/21 12:32:41 cvs-jajcus Exp $
+# $Id: configure.ac,v 1.24 2002/12/19 08:33:39 cvs-jajcus Exp $
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT([apinger], [0.6-test2], [jajcus@pld.org.pl])
+AC_INIT([apinger], [0.6-test5], [jajcus@pld.org.pl])
 AC_CONFIG_SRCDIR([src/apinger.c])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
@@ -30,7 +30,13 @@ AC_HEADER_TIME
 
 JK_LINUX_FILTER
 JK_AP_INET
-JK_AP_INET6
+
+AC_ARG_ENABLE(ipv6,[AC_HELP_STRING([--disable-ipv6],
+	      			[Disable IPv6 support.])],
+			      		[],[enable_ipv6=yes])
+if test "x$enable_ipv6" = "xyes" ; then
+	JK_AP_INET6
+fi
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
