@@ -1,5 +1,5 @@
-# $Id: Makefile.am,v 1.4 2002/07/17 09:33:43 cvs-jajcus Exp $
+# $Id: Makefile.am,v 1.5 2002/10/21 12:32:05 cvs-jajcus Exp $
 
 EXTRA_DIST = autogen.sh TODO BUGS
 
-SUBDIRS = src
+SUBDIRS = src doc
