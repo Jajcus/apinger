@@ -1,5 +1,8 @@
 2002-07-18  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* src/apinger.c, src/cfgparser1.y, src/conf.c, src/conf.h, src/main.c:
+	- pipe/command improvements and bugfix
+
 	* src/apinger.conf:
 	- command on/command off  instaead of command_on/command_off
 
