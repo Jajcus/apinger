@@ -6,6 +6,7 @@
 #include <linux/filter.h>
 #include <sys/time.h>
 #include "apinger.h"
+#include "debug.h"
 
 /* filter instalation code borrowed from iputils */
 void install_filter(){
@@ -63,15 +64,13 @@ u_short in_cksum(const u_short *addr, register int len, u_short csum){
         return (answer);
 }
 
-void send_icmp_probe(struct target *t,struct timeval *cur_time){
+void send_icmp_probe(struct target *t,struct timeval *cur_time,int seq){
 static char buf[1024];
 struct icmphdr *p=(struct icmphdr *)buf;
 struct trace_info ti;
 int size;
 int ret;
-int seq;
 
-	seq=++t->last_sent;
 
 	p->type=ICMP_ECHO;
 	p->code=0;
@@ -141,8 +140,6 @@ int make_icmp_socket(void){
 	icmp_sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (icmp_sock<0)
 		myperror("socket");
-	/*else
-		install_filter();*/
 	return icmp_sock;
 }
 

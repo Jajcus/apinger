@@ -7,6 +7,7 @@
 #include <linux/types.h>
 #include <linux/filter.h>
 #include "apinger.h"
+#include "debug.h"
 
 void install_filter6(){
 
@@ -31,15 +32,12 @@ void install_filter6(){
 }
 
 
-void send_icmp6_probe(struct target *t,struct timeval *cur_time){
+void send_icmp6_probe(struct target *t,struct timeval *cur_time,int seq){
 static char buf[1024];
 struct icmp6_hdr *p=(struct icmp6_hdr *)buf;
 struct trace_info ti;
 int size;
 int ret;
-int seq;
-
-	seq=++t->last_sent;
 
 	p->icmp6_type=ICMP6_ECHO_REQUEST;
 	p->icmp6_code=0;
@@ -97,18 +95,15 @@ struct timeval time_recv;
 
 
 int make_icmp6_socket(void){
+int opt;
 
 	icmp6_sock = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6);
 	if (icmp6_sock<0)
 		myperror("socket");
 	else {
-		int err, csum_offset, sz_opt;
-		csum_offset = 2;
-		sz_opt = sizeof(int);
-		err = setsockopt(icmp6_sock, SOL_RAW, IPV6_CHECKSUM, &csum_offset, sz_opt);
-		if (err < 0) {
+		opt=2;
+		if (setsockopt(icmp6_sock, SOL_RAW, IPV6_CHECKSUM, &opt, sizeof(int)))
 			myperror("setsockopt(IPV6_CHECKSUM)");
-		}
 		/*install_filter6();*/
 	}
 	return icmp6_sock;

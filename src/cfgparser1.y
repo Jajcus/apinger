@@ -4,6 +4,7 @@
 #include <malloc.h>
 #include <string.h>
 #include "conf.h"
+#include "debug.h"
 
 #define YYDEBUG 1
 #define YYERROR_VERBOSE 1
@@ -12,7 +13,7 @@ void yyerror(const char *s);
 int yylex(void);
 
 extern FILE *yyin, *yyout;
-struct config cur_config={NULL,NULL,NULL,NULL,NULL,0};
+struct config cur_config;
 struct alarm_cfg *cur_alarm;
 struct target_cfg *cur_target;
 
@@ -37,6 +38,8 @@ struct target_cfg *cur_target;
 %token <s> STRING
 
 %token DEBUG
+%token USER
+%token GROUP
 %token ALARM
 %token TARGET
 
@@ -50,7 +53,7 @@ struct target_cfg *cur_target;
 %token LOSS
 %token DELAY
 
-%token SAMPLES
+%token TIME_
 %token PERCENT_LOW
 %token PERCENT_HIGH
 %token DELAY_LOW
@@ -59,21 +62,32 @@ struct target_cfg *cur_target;
 %token DESCRIPTION
 %token ALARMS
 %token INTERVAL
+%token AVG_DELAY_SAMPLES
+%token AVG_LOSS_SAMPLES
+%token AVG_LOSS_DELAY_SAMPLES
 
 %token ERROR
 
 %type <s> string
 %type <al> alarmlist
-%type <a> makealarm
-%type <t> maketarget
+%type <a> makealarm getdefalarm
+%type <t> maketarget getdeftarget
 
 %%
 
 config:	/* */
 	| DEBUG BOOLEAN { cur_config.debug=$2; }
+	| USER string { cur_config.user=$2; }
+	| GROUP string { cur_config.group=$2; }
 	| alarm 
 	| target 
 	| config separator config
+	| error
+		{
+			log("Configuration file syntax error. Line %i, character %i",
+					@$.first_line+1,@$.first_column+1);
+			YYABORT;
+		}
 ;
 
 makealarm: 	{ $$=make_alarm(); } 
@@ -82,11 +96,19 @@ makealarm: 	{ $$=make_alarm(); }
 maketarget: 	{ $$=make_target(); }
 ;
 
-alarm:	ALARM makealarm DEFAULT '{' alarmcommoncfg '}' 
-     		{ 
-			cur_alarm->name="default";
-			cur_config.alarm_defaults=cur_alarm; 
+getdefalarm: 	{ 
+	   		$$=&cur_config.alarm_defaults; 
+			cur_alarm=$$;
+	   	} 
+;
+
+getdeftarget: 	{ 
+	    		$$=&cur_config.target_defaults; 
+			cur_target=$$;
 		}
+;
+
+alarm:	ALARM getdefalarm DEFAULT '{' alarmcommoncfg '}' 
      	| ALARM makealarm DOWN string '{' alarmdowncfg '}' 
 		{ 
 			cur_alarm->name=$4;
@@ -112,7 +134,7 @@ alarmlosscfg: alarmcommon
 	| PERCENT_LOW INTEGER 
 		{ cur_alarm->p.lh.low=$2; }
 	| PERCENT_HIGH INTEGER 
-		{ cur_alarm->p.lh.low=$2; }
+		{ cur_alarm->p.lh.high=$2; }
 	| alarmlosscfg separator alarmlosscfg
 ;
 
@@ -125,7 +147,7 @@ alarmdelaycfg: alarmcommon
 ;
 
 alarmdowncfg: alarmcommon
-	| SAMPLES INTEGER 
+	| TIME_ TIME 
 		{ cur_alarm->p.val=$2; }
 	| alarmdowncfg separator alarmdowncfg
 ;
@@ -140,11 +162,7 @@ alarmcommon: /* */
 ;
 
 
-target:	TARGET maketarget DEFAULT '{' targetcfg '}' 
-      		{ 
-			cur_target->name="default";
-			cur_config.target_defaults=cur_target; 
-		}
+target:	TARGET getdeftarget DEFAULT '{' targetcfg '}' 
      	| TARGET maketarget string '{' targetcfg '}' 
 		{ 
 			cur_target->name=$3;
@@ -159,6 +177,12 @@ targetcfg: /* */
 		{ cur_target->alarms=$2; }
 	| INTERVAL INTEGER
 		{ cur_target->interval=$2; }
+	| AVG_DELAY_SAMPLES INTEGER
+		{ cur_target->avg_delay_samples=$2; }
+	| AVG_LOSS_SAMPLES INTEGER
+		{ cur_target->avg_loss_samples=$2; }
+	| AVG_LOSS_DELAY_SAMPLES INTEGER
+		{ cur_target->avg_loss_delay_samples=$2; }
 	| targetcfg separator targetcfg
 ;
 
@@ -178,15 +202,6 @@ separator: '\n'
 
 %%
 void yyerror (const char *s) {
-	printf ("%s\n", s);
+	log("%s", s);
 }
 
-int main( int argc, char *argv[] ){
-int ret;
-
-	yyin=fopen("/etc/apinger.conf","r");
-	yydebug=0;
-	memset(&yylloc,0,sizeof(yylloc));
-	ret=yyparse();
-	return 0;
-}

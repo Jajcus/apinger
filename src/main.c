@@ -5,13 +5,39 @@
 #include <pwd.h>
 #include <grp.h>
 #include "apinger.h"
+#include "conf.h"
+#include "debug.h"
 
 /* Global variables */
-struct target_config current_config={1000,-1,-1,-1,-1,-1,NULL,NULL};
 struct target *targets=NULL;
+struct config default_config={
+	NULL,NULL,NULL,		/* pool, alarms, targets */
+		{ 		/* alarm defaults */
+				AL_NONE,	/* type */
+				"default",	/* name */
+				"root",		/* mailto */
+				"nobody",	/* mailfrom */
+				NULL,		/* mailenvfrom */
+				{},		/* params */
+				NULL		/* next */
+		},
+		{		/* target defaults */
+				"default",	/* name */
+				"",		/* description */
+				1000,		/* interval */
+				20,		/* avg_delay_samples */
+				5,		/* avg_loss_delay_samples */
+				50,		/* avg_loss_samples */
 
-int cf_debug=0;
-int foreground=0;
+				NULL,NULL	/* alarms, next */
+		},
+	0, 			/* debug */
+	"nobody",		/* user */
+	NULL,			/* group */
+	"/var/run/apinger.pid"	/* pid file */
+};
+
+int foreground=1;
 
 int icmp_sock;
 int icmp6_sock;
@@ -21,10 +47,17 @@ struct timeval next_probe={0,0};
 
 /* Interrupt handler */
 typedef void (*sighandler_t)(int);
-volatile int signal_received=0;
+volatile int reload_request=0;
+volatile int interrupted_by=0;
 void signal_handler(int signum){
 
-	signal_received=signum;
+	if (signum==SIGHUP){
+		signal(SIGHUP,signal_handler);
+		reload_request=1;
+	}
+	else{
+		interrupted_by=signum;
+	}
 }
 
 void usage(const char *name){
@@ -39,18 +72,21 @@ void usage(const char *name){
 
 int main(int argc,char *argv[]){
 struct passwd *pw;
+struct group *gr;
 int c;
 FILE *pidfile;
 pid_t pid;
 int i;
+int debug=0;
+int stay_foreground=0;
 
 	while((c=getopt(argc,argv,"fdh")) != -1){
 		switch(c){
 			case 'f':
-				foreground=1;
+				stay_foreground=1;
 				break;
 			case 'd':
-				cf_debug=1;
+				debug=1;
 				break;
 			case 'h':
 				usage(argv[0]);
@@ -66,8 +102,14 @@ int i;
 				return 1;
 		}
 	}
-	if (!foreground){
-		pidfile=fopen(PID_FILE,"r");
+	if (load_config(CONFIG)){
+		log("Couldn't read config (\"%s\").",CONFIG);
+		return 1;
+	}
+	if (debug) config->debug=1;
+
+	if (!stay_foreground){
+		pidfile=fopen(config->pid_file,"r");
 		if (pidfile){
 			fscanf(pidfile,"%d",&pid);
 			if (pid>0 && kill(pid,0)==0){
@@ -75,12 +117,6 @@ int i;
 				return 1;
 			}
 			fclose(pidfile);
-		}
-		pidfile=fopen(PID_FILE,"w");
-		if (!pidfile){
-			fprintf(stderr,"Couldn't open pid file.");
-			perror(PID_FILE);
-			return 1;
 		}
 	}
 
@@ -90,11 +126,47 @@ int i;
 		return 1;
 	}
 
-	pw=getpwnam("pinger");
+	pw=getpwnam(config->user);
 	if (!pw) {
-		debug("getpwnam(\"pinger\") failed.");
+		debug("getpwnam(\"%s\") failed.",config->user);
 		return 1;
 	}
+	if (config->group){
+		gr=getgrnam(config->group);
+		if (!gr) {
+			debug("getpwnam(\"%s\") failed.",config->group);
+			return 1;
+		}
+	}
+	else gr=NULL;
+
+
+	if (!stay_foreground){
+		pid=fork();
+		if (pid<0){
+			perror("fork");
+			fclose(pidfile);
+			exit(1);
+		}
+		if (pid>0){ /* parent */
+			pidfile=fopen(config->pid_file,"w");
+			if (!pidfile){
+				fprintf(stderr,"Couldn't open pid file for writting.");
+				perror(config->pid_file);
+				return 1;
+			}
+			fprintf(pidfile,"%i\n",pid);
+			fchown(fileno(pidfile),pw->pw_uid,gr?gr->gr_gid:pw->pw_gid);
+			fclose(pidfile);
+			exit(0);
+		}
+		foreground=0;
+		for(i=0;i<255;i++)
+			if (i!=icmp_sock && i!=icmp6_sock)
+				close(i);
+		setsid();	
+	}
+	
 	if (initgroups("pinger",pw->pw_gid)){
 		myperror("initgroups");
 		return 1;
@@ -108,35 +180,24 @@ int i;
 		return 1;
 	}
 
-	read_config();
-
-	if (!foreground){
-		pid=fork();
-		if (pid<0){
-			perror("fork");
-			fclose(pidfile);
-			exit(1);
-		}
-		if (pid>0){ /* parent */
-			fprintf(pidfile,"%i\n",pid);
-			fclose(pidfile);
-			exit(0);
-		}
-		for(i=0;i<255;i++)
-			if (i!=icmp_sock && i!=icmp6_sock)
-				close(i);
-		setsid();	
-	}
-	
 	ident=getpid();
 	signal(SIGTERM,signal_handler);
 	signal(SIGINT,signal_handler);
+	signal(SIGHUP,signal_handler);
 	signal(SIGPIPE,SIG_IGN);
 	main_loop();
 	if (icmp_sock>=0) close(icmp_sock);
 	if (icmp6_sock>=0) close(icmp6_sock);
 
-	log("Exiting on signal %i.",signal_received);
+	log("Exiting on signal %i.",interrupted_by);
+
+	if (!foreground){
+		/*clear the pid file*/
+		pidfile=fopen(config->pid_file,"w");
+		if (pidfile) fclose(pidfile);
+		/* try to remove it. Most probably this will fail */
+		unlink(config->pid_file);
+	}
 
 	return 0;
 }

@@ -1,1 +1,13 @@
+COPYING
+INSTALL
+Makefile.in
+aclocal.m4
+config.*
+configure
+depcomp
+install-sh
+missing
+mkinstalldirs
+stamp-h*
 tags
+ylwrap

@@ -2,12 +2,15 @@
 %{
 #include <math.h>
 #include "cfgparser.tab.h"
+#include "debug.h"
 
 #define LOC yylloc.first_line=yylloc.last_line; yylloc.first_column=yylloc.last_column
 #define LOCINC yylloc.last_column+=yyleng
-
 extern YYLTYPE yylloc;
+
 %}
+%option noyywrap
+
 
 DIGIT	[0-9]
 
@@ -46,24 +49,29 @@ DIGIT	[0-9]
 			yylval.i=f; return TIME;
 		}
 
-debug		{ LOC; LOCINC; return DEBUG; }
 alarm		{ LOC; LOCINC; return ALARM; }
-target		{ LOC; LOCINC; return TARGET; }
-default		{ LOC; LOCINC; return DEFAULT; }
-mailto		{ LOC; LOCINC; return MAILTO; }
-mailfrom	{ LOC; LOCINC; return MAILFROM; }
-mailenvfrom	{ LOC; LOCINC; return MAILENVFROM; }
-down		{ LOC; LOCINC; return DOWN; }
-loss		{ LOC; LOCINC; return LOSS; }
-delay		{ LOC; LOCINC; return DELAY; }
-samples		{ LOC; LOCINC; return SAMPLES; }
-percent_low	{ LOC; LOCINC; return PERCENT_LOW; }
-percent_high	{ LOC; LOCINC; return PERCENT_HIGH; }
-delay_low	{ LOC; LOCINC; return DELAY_LOW; }
-delay_high	{ LOC; LOCINC; return DELAY_HIGH; }
-description	{ LOC; LOCINC; return DESCRIPTION; }
 alarms		{ LOC; LOCINC; return ALARMS; }
+avg_delay_samples	{ LOC; LOCINC; return AVG_DELAY_SAMPLES; }
+avg_loss_samples	{ LOC; LOCINC; return AVG_LOSS_SAMPLES; }
+avg_loss_delay_samples	{ LOC; LOCINC; return AVG_LOSS_DELAY_SAMPLES; }
+debug		{ LOC; LOCINC; return DEBUG; }
+default		{ LOC; LOCINC; return DEFAULT; }
+delay		{ LOC; LOCINC; return DELAY; }
+delay_high	{ LOC; LOCINC; return DELAY_HIGH; }
+delay_low	{ LOC; LOCINC; return DELAY_LOW; }
+description	{ LOC; LOCINC; return DESCRIPTION; }
+down		{ LOC; LOCINC; return DOWN; }
+group		{ LOC; LOCINC; return GROUP; }
 interval	{ LOC; LOCINC; return INTERVAL; }
+loss		{ LOC; LOCINC; return LOSS; }
+mailenvfrom	{ LOC; LOCINC; return MAILENVFROM; }
+mailfrom	{ LOC; LOCINC; return MAILFROM; }
+mailto		{ LOC; LOCINC; return MAILTO; }
+percent_high	{ LOC; LOCINC; return PERCENT_HIGH; }
+percent_low	{ LOC; LOCINC; return PERCENT_LOW; }
+target		{ LOC; LOCINC; return TARGET; }
+time		{ LOC; LOCINC; return TIME_; }
+user		{ LOC; LOCINC; return USER; }
 
 on|true|yes	{ LOC; LOCINC; yylval.i=1; return BOOLEAN; }
 off|false|no	{ LOC; LOCINC; yylval.i=0; return BOOLEAN; }
@@ -78,7 +86,11 @@ off|false|no	{ LOC; LOCINC; yylval.i=0; return BOOLEAN; }
 
 [ \t]+		{ LOC; LOCINC; }
 
-.           	{ LOC; LOCINC; yylval.s=yytext; return ERROR; }
+.           	{ LOC; LOCINC; yylval.s=yytext; 
+		  log("Configuration file syntax error. Line %i, character %i ('%c')",
+					yylloc.first_line+1,yylloc.first_column+1,yytext[0]);
+		  return ERROR;
+		}
 
 %%
 
