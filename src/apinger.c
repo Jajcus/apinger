@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.32 2002/10/16 08:20:10 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.33 2002/10/21 12:34:12 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -433,6 +433,11 @@ struct delayed_report *dr,*tdr;
 	}
 
 	if (a->combine_interval>0){
+		for(tdr=delayed_reports;tdr!=NULL && tdr->next!=NULL;tdr=tdr->next){
+			if (strcmp(tdr->t.name,t->name)==0 && tdr->a==a && tdr->on==on){
+				return;
+			}
+		}
 		dr=NEW(struct delayed_report,1);
 		assert(dr!=NULL);
 		dr->t=*t;
@@ -442,7 +447,6 @@ struct delayed_report *dr,*tdr;
 		dr->on=on;
 		gettimeofday(&dr->timestamp,NULL);
 		dr->next=NULL;
-		for(tdr=delayed_reports;tdr!=NULL && tdr->next!=NULL;tdr=tdr->next);
 		if (tdr==NULL)
 			delayed_reports=dr;
 		else
@@ -817,15 +821,15 @@ struct timeval cur_time,next_status={0,0},tv,next_report={0,0},next_rrd_update={
 struct pollfd pfd[2];
 int timeout;
 int npfd=0;
-int i,r;
+int i;
 char buf[100];	
 int downtime;
 struct alarm_list *al,*nal;
 struct active_alarm_list *aal;
 struct alarm_cfg *a;
-int recv_pipe[2];
-int pid;
 #ifdef FORKED_RECEIVER
+int recv_pipe[2];
+int pid,r;
 struct piped_info pi;
 #endif
 
