@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.h,v 1.10 2002/07/26 08:39:13 cvs-jajcus Exp $
+ *  $Id: conf.h,v 1.11 2002/09/24 11:38:50 cvs-jajcus Exp $
  */
 
 #ifndef conf_h
@@ -106,5 +106,6 @@ void add_target(void);
 struct alarm_list *alarm2list(const char *aname,struct alarm_list *list);
 
 int load_config(const char *filename);
+void free_config(void);
 
 #endif
