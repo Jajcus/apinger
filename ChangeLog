@@ -1,5 +1,10 @@
 2002-09-26  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: ****  Version: 0.4.1  ****
+
+	* src/apinger.c:
+	- some unneeded and not portable debug code removed (raise(SIGINT) in apinger.c)
+
 	* configure.ac: ****  Version: 0.4  ****
 
 2002-09-25  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
