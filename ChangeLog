@@ -1,5 +1,7 @@
 2003-03-26  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* src/Makefile.am: - updates for new automake
+
 	* NEWS: - updates for 0.6.1
 
 	* src/apinger.conf, src/cfgparser1.y, src/cfgparser2.l, src/conf.c, src/conf.h, src/main.c:
