@@ -1,3 +1,11 @@
+2002-10-16  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/apinger.c, src/apinger.h:
+	- macros for avg loss and avg delay computation
+	- kill child processes on exit
+
+	* src/rrd.c, src/rrd.h: - rrd_close() function for closing rrdtool pipe
+
 2002-10-14  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* configure.ac: ****  Version: 0.5  ****
