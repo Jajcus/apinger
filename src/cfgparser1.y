@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser1.y,v 1.13 2002/11/13 14:17:24 cvs-jajcus Exp $
+ *  $Id: cfgparser1.y,v 1.14 2003/03/26 11:27:47 cvs-jajcus Exp $
  */
 
 
@@ -74,6 +74,7 @@ struct target_cfg *cur_target;
 %token ALARM
 %token TARGET
 
+%token OVERRIDE
 %token DEFAULT
 
 %token MAILTO
@@ -249,6 +250,8 @@ targetcfg: /* */
 		{ cur_target->description=$2; }
 	| ALARMS alarmlist
 		{ cur_target->alarms=$2; }
+	| ALARMS OVERRIDE alarmlist
+		{ cur_target->alarms_override=1; cur_target->alarms=$3; }
 	| INTERVAL INTEGER
 		{ cur_target->interval=$2; }
 	| INTERVAL TIME

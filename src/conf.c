@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.c,v 1.13 2002/10/03 12:37:09 cvs-jajcus Exp $
+ *  $Id: conf.c,v 1.14 2003/03/26 11:27:47 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -188,10 +188,12 @@ int ret;
 			if (t->rrd_filename==NULL)
 				t->rrd_filename=cur_config.target_defaults.rrd_filename;
 			for(al=t->alarms;al && al->next;al=al->next);
-			if (al)
-				al->next=cur_config.target_defaults.alarms;
-			else
-				t->alarms=cur_config.target_defaults.alarms;
+			if (t->alarms_override==0){
+				if (al)
+					al->next=cur_config.target_defaults.alarms;
+				else
+					t->alarms=cur_config.target_defaults.alarms;
+			}
 		}
 		if (config!=NULL){
 			struct pool_item *pool=config->pool;
