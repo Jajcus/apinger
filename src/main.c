@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.7 2002/07/17 09:32:51 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.8 2002/07/17 17:55:11 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -51,6 +51,9 @@ struct config default_config={
 				"root",		/* mailto */
 				"nobody",	/* mailfrom */
 				NULL,		/* mailenvfrom */
+				NULL,		/* command on */
+				NULL,		/* command off */
+				NULL,		/* pipe */
 				{},		/* params */
 				NULL		/* next */
 		},
@@ -67,7 +70,8 @@ struct config default_config={
 	0, 			/* debug */
 	"nobody",		/* user */
 	NULL,			/* group */
-	"/var/run/apinger.pid"	/* pid file */
+	"/usr/lib/sendmail -t",	/* mailer */
+	LOCALSTATEDIR "/run/apinger.pid" /* pid file */
 };
 
 int foreground=1;
@@ -174,7 +178,6 @@ int stay_foreground=0;
 		pid=fork();
 		if (pid<0){
 			perror("fork");
-			fclose(pidfile);
 			exit(1);
 		}
 		if (pid>0){ /* parent */
