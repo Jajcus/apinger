@@ -1,4 +1,12 @@
+* Version 0.2
 
+	Main changes from 0.1:
+		
+		- portability fixes (it compiles on FreeBSD now).
+		- fixed bug with "down" alarms being fired on startup
+		- sysconfdir set by configure script is used instead hardcoded 
+		  /etc directory for config file
+	
 * Version 0.1 
 	
 	This is the initial release

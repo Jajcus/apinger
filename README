@@ -1,5 +1,5 @@
 
-Alarm Pinger v. 0.1
+Alarm Pinger v. 0.2
 ===================
 
 Alarm Pinger (apinger) is a little tool which monitors various IP devices by
@@ -8,12 +8,12 @@ but most of them are shell or perl scripts, spawning many processes, thus much
 CPU-expensive, especially when one wants continuous monitoring and fast
 response on target failure.  Alarm Pinger is a single process written in C, so
 it doesn't need much CPU power even when monitoring many targets with frequent
-probes.  Alarm Pinger supports both IPv4 and IPv6. The code has been tested on
-Linux only, probably needs some porting to work on other platforms.
+probes.  Alarm Pinger supports both IPv4 and IPv6. The code have been tested
+on Linux and FreeBSD.
 
-Alarm Pinger is quite configurable via /etc/apinger.conf file. The configuration file
-contains definitions for alarms, targets and various parameters. See the apinger.conf
-in the src/ directory for description.
+Alarm Pinger is quite configurable via $sysconfdir/apinger.conf file. The
+configuration file contains definitions for alarms, targets and various
+parameters. See the apinger.conf in the src/ directory for description.
 
 apinger needs root privileges to start (to create raw sockets), but will drop
 them before sending or receiving any packets. 
