@@ -8,6 +8,7 @@ Makefile
 Makefile.in
 apinger
 cfgparser1.c
+cfgparser1.h
 cfgparser2.c
 cfgtest
 tags
