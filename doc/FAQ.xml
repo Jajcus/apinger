@@ -1,0 +1,66 @@
+<?xml version='1.0'?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+	"http://www.oasis-open.org/docbook/xml/4.0/docbookx.dtd">
+<article class="faq">
+<articleinfo>
+	<author><firstname>Jacek</firstname><surname>Konieczny</surname></author>
+	<title>Frequently Asked Questions about Alarm Pinger</title>
+</articleinfo>
+<qandaset>
+
+<qandaentry>
+	<question><para>
+		What is Alarm Pinger?
+	</para></question>
+	<answer><para>
+		Alarm pinger is a tool for network monitoring. It test
+		periodically reachability of one of more network devices and the
+		quality of their network connetions.
+	</para></answer>
+</qandaentry>
+<qandaentry>
+	<question><para>
+		Can Alarm Pinger be user to monitor services?
+	</para></question>
+	<answer><para>
+		No. The only way Alarm Pinger monitor things is sending ICMP
+		echo-requests and analyzing ICMP echo-replies. So only host
+		reachability is tested.
+	</para></answer>
+</qandaentry>
+<qandaentry>
+	<question><para>
+		Does Alarm Pinger use TCP/UDP/anything instead of ICMP for
+		pinging?
+	</para></question>
+	<answer><para>
+		No. It just do plain ICMP echo queries.
+	</para></answer>
+</qandaentry>
+
+<qandaentry>
+	<question><para>
+		Why can't I use hostnames for target names?
+	</para></question>
+	<answer><para>
+		Because it would be very hard to interpret results if the
+		hostname resolves to more than one IP address.
+	</para></answer>
+</qandaentry>
+<qandaentry>
+	<question><para>
+		Why can't I use hostnames for target names?
+	</para></question>
+	<answer><para>
+		Because it would be very hard to interpret results if the
+		hostname resolves to more than one IP address.
+	</para></answer>
+</qandaentry>
+
+
+</qandaset>
+</article>
+
+<!--
+ vi: tw=80 indentexpr=
+-->
