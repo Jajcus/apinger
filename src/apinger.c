@@ -39,6 +39,7 @@
 #include "apinger.h"
 #include "conf.h"
 #include "debug.h"
+#include "tv_macros.h"
 
 #ifdef HAVE_ASSERT_H
 # include <assert.h>
