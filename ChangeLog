@@ -1,0 +1,64 @@
+2002-07-14  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/Makefile.am, src/apinger.c, src/apinger.h, src/cfgparser1.y, src/cfgparser2.l, src/cfgtest.c, src/conf.c, src/debug.c, src/debug.h, src/icmp.c, src/icmp6.c, src/main.c, autogen.sh, configure.ac:
+	- more portability functions
+
+2002-07-12  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* configure.ac, src/apinger.c, src/apinger.h, src/cfgtest.c, src/conf.c, src/icmp.c, src/icmp6.c:
+	- portability fixes
+
+	* src/Attic/config.c: - removed obsolete file
+
+	* NEWS, README: - written
+
+	* src/Makefile.am, src/apinger.conf: - example configuration file added
+
+	* TODO, Makefile.am: - TODO added
+
+	* src/apinger.c: - tried to fix problem with reloading not being loged
+
+	* src/icmp.c, src/icmp6.c:
+	- don't log sendto() errors unless debuging is on
+
+2002-07-11  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/Makefile.am: - cfgparser1.h added
+
+	* src/cfgparser1.y: - interval argument is of type "TIME"
+
+	* configure.ac: - C++ compiler is not needed
+
+	* src/Makefile.am, src/cfgparser2.l, src/conf.c:
+	- generater proper header file for bison parser
+
+	* src/Attic/cfgparser.yy, src/cfgparser1.y, src/cfgparser2.l, src/cfgtest.c, src/conf.c, src/conf.h, src/debug.h, src/icmp.c, src/icmp6.c, src/main.c, AUTHORS, Attic/Makefile, Makefile.am, NEWS, README, autogen.sh, configure.ac, src/Attic/Makefile, src/Attic/cfgparser.y, src/Makefile.am, src/apinger.c, src/apinger.h:
+	- seems to work; autoconf/automake support added
+
+2002-06-24  Jacek Konieczny  <jajcus@bnet.pl>
+
+	* src/cfgtest.c: - config file parser tester
+
+2002-06-18  Jacek Konieczny  <jajcus@bnet.pl>
+
+	* src/Attic/Makefile, src/Attic/cfgparser.y, src/Attic/cfgparser.yy, src/apinger.c, src/conf.h:
+	- work on the new configuration parser continues
+
+	* src/conf.c: - config file functions
+
+2002-06-17  Jacek Konieczny  <jajcus@bnet.pl>
+
+	* src/Attic/cfgparser.y, src/Attic/cfgparser.yy, src/conf.h, src/Attic/Makefile:
+	- config file parser
+
+2002-06-11  Jacek Konieczny  <jajcus@bnet.pl>
+
+	* src/Attic/Makefile, src/Attic/config.c, src/apinger.c, src/apinger.h, src/icmp.c, src/icmp6.c, src/main.c, Attic/Makefile, Attic/pinger.c:
+	- sources spilt into several files
+
+2002-06-10  Jacek Konieczny  <jajcus@bnet.pl>
+
+	* Attic/Makefile: - glib is not used. efence just for debugging
+
+	* Attic/Makefile, Attic/pinger.c: - pinger do monitorowania sieci
+
