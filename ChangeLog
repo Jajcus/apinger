@@ -1,5 +1,17 @@
 2002-07-15  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* Makefile.am: - BUGS file added
+
+	* BUGS, TODO: - separate file for bugs
+
+	* src/apinger.c:
+	- "-t" flag to sendmail (take recipient addresses from headers)
+
+	* acinclude.m4: - custom autoconf macros
+
+	* configure.ac, src/apinger.c, src/debug.c, src/icmp.c, src/icmp6.c:
+	- more portability fixes
+
 	* README: - typo
 
 2002-07-14  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
