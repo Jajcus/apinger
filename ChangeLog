@@ -1,5 +1,12 @@
 2002-07-18  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* src/conf.h, src/apinger.c: - support for mail message threading
+
+	* TODO: - +1
+
+	* src/main.c, src/apinger.c, src/apinger.conf, src/apinger.h, src/cfgparser1.y, src/cfgparser2.l, src/conf.h, TODO:
+	- support for status information writting to a file
+
 	* TODO, src/apinger.c, src/apinger.h, src/main.c:
 	- config file path can be set from command line
 
