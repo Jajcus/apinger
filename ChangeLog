@@ -1,3 +1,12 @@
+2002-10-14  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* configure.ac: ****  Version: 0.5  ****
+
+	* NEWS, README: - updates for 0.5
+
+	* src/apinger.c, src/apinger.conf, src/icmp.c, src/icmp6.c:
+	- fixes for precise delay measurement (using SO_TIMEOUT or ioctl())
+
 2002-10-04  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/apinger.c, src/apinger.h, src/icmp.c, src/icmp6.c, src/main.c, TODO, configure.ac:
