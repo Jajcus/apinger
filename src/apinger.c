@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.36 2002/10/25 06:30:06 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.37 2002/11/05 14:22:20 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -50,6 +50,8 @@
 #else
 # define assert(cond)
 #endif
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
 
 struct delayed_report {
 	int on;
@@ -495,16 +497,16 @@ int seq;
 #endif
 
 	i=t->last_sent%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
-	if (t->last_sent>=t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
+	if (t->last_sent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
 		if (!t->queue[i]) t->recently_lost--;
 	}
 	t->queue[i]=0;
 
-	if (t->last_sent>=t->config->avg_loss_delay_samples){
+	if (t->last_sent>t->config->avg_loss_delay_samples){
 		i1=(t->last_sent-t->config->avg_loss_delay_samples)
 			%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
 		if (!t->queue[i1]) t->recently_lost++;
-		debug("Recently lost packets: %i",t->recently_lost);
+			debug("Recently lost packets: %i",t->recently_lost);
 	}
 
 	t->upsent++;
@@ -678,6 +680,7 @@ int l;
 			t->queue=NEW(char,l);
 		assert(t->queue!=NULL);
 		memset(t->queue,0,l);
+		/* t->recently_lost=tc->avg_loss_samples; */
 		l=tc->avg_delay_samples;
 		if (t->rbuf)
 			t->rbuf=(double *)realloc(t->rbuf,l);
@@ -738,6 +741,8 @@ struct target *t;
 struct active_alarm_list *al;
 struct alarm_cfg *a;
 time_t tm;
+int i,qp,really_lost;
+char *buf1,*buf2;
 
 	if (config->status_file==NULL) return;
 	
@@ -752,6 +757,8 @@ time_t tm;
 	for(t=targets;t;t=t->next){
 		fprintf(f,"Target: %s\n",t->name);
 		fprintf(f,"Description: %s\n",t->description);
+		fprintf(f,"Last reply received: #%i %s",t->last_received,
+			ctime(&t->last_received_tv.tv_sec));
 		fprintf(f,"Average delay: %0.3fms\n",AVG_DELAY(t));
 		if (AVG_LOSS_KNOWN(t)){
 			fprintf(f,"Average packet loss: %0.1f%%\n",AVG_LOSS(t));
@@ -765,6 +772,48 @@ time_t tm;
 			fprintf(f,"\n");
 		}
 		else fprintf(f," None\n");
+
+		buf1=NEW(char,t->config->avg_loss_delay_samples+1);
+		buf2=NEW(char,t->config->avg_loss_samples+1);
+		i=t->last_sent%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
+		for(i=0;i<t->config->avg_loss_delay_samples;i++){
+			if (i>=t->last_sent){
+				buf1[t->config->avg_loss_delay_samples-i-1]='-';
+				continue;
+			}
+			qp=(t->last_sent-i)%(t->config->avg_loss_delay_samples+
+							t->config->avg_loss_samples);
+			if (t->queue[qp])
+				buf1[t->config->avg_loss_delay_samples-i-1]='#';
+			else
+				buf1[t->config->avg_loss_delay_samples-i-1]='.';
+		}
+		buf1[i]=0;
+		really_lost=0;
+		for(i=0;i<t->config->avg_loss_samples;i++){
+			if (i>=t->last_sent-t->config->avg_loss_delay_samples){
+				buf2[t->config->avg_loss_samples-i-1]='-';
+				continue;
+			}
+			qp=(t->last_sent-i-t->config->avg_loss_delay_samples)
+				%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
+			if (t->queue[qp])
+				buf2[t->config->avg_loss_samples-i-1]='#';
+			else{
+				buf2[t->config->avg_loss_samples-i-1]='.';
+				really_lost++;
+			}
+		}
+		buf2[i]=0;
+		fprintf(f,"Received packets buffer: %s %s\n",buf2,buf1);
+		if (t->recently_lost!=really_lost){
+			fprintf(f,"   lost packet count mismatch (%i!=%i)!\n",t->recently_lost,really_lost);
+			logit("%s: Lost packet count mismatch (%i!=%i)!",t->name,t->recently_lost,really_lost);
+			logit("%s: Received packets buffer: %s %s\n",t->name,buf2,buf1);
+		}
+		free(buf1);
+		free(buf2);
+		
 		fprintf(f,"\n");
 	}
 	fclose(f);
