@@ -1,5 +1,7 @@
 2002-10-01  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* src/apinger.h: - subst_macros() prototype added
+
 	* src/cfgparser1.y, src/cfgparser2.l, src/conf.h, src/main.c:
 	- rrd configuration
 
