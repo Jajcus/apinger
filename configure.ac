@@ -1,7 +1,7 @@
-# $Id: configure.ac,v 1.14 2002/07/18 14:08:38 cvs-jajcus Exp $
+# $Id: configure.ac,v 1.15 2002/07/19 12:11:44 cvs-jajcus Exp $
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT([apinger], [0.3-test2], [jajcus@pld.org.pl])
+AC_INIT([apinger], [0.3], [jajcus@pld.org.pl])
 AC_CONFIG_SRCDIR([src/apinger.c])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
