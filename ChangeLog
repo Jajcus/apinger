@@ -1,5 +1,7 @@
 2003-03-26  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: *** Version: 0.6.1 ***
+
 	* src/Makefile.am: - updates for new automake
 
 	* NEWS: - updates for 0.6.1
