@@ -1,4 +1,4 @@
 
-EXTRA_DIST = autogen.sh
+EXTRA_DIST = autogen.sh TODO
 
 SUBDIRS = src
