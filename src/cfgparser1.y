@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser1.y,v 1.12 2002/10/24 08:04:50 cvs-jajcus Exp $
+ *  $Id: cfgparser1.y,v 1.13 2002/11/13 14:17:24 cvs-jajcus Exp $
  */
 
 
@@ -122,7 +122,7 @@ config:	/* */
 	| DEBUG boolean { cur_config.debug=$2; }
 	| USER string { cur_config.user=$2; }
 	| GROUP string { cur_config.group=$2; }
-	| MAILER string { cur_config.group=$2; }
+	| MAILER string { cur_config.mailer=$2; }
 	| TIMESTAMP_FORMAT string { cur_config.timestamp_format=$2; }
 	| PID_FILE string { cur_config.pid_file=$2; }
 	| STATUS '{' statuscfg '}'
