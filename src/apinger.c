@@ -337,7 +337,7 @@ struct alarm_list *al,*an;
 struct alarm_cfg *a;
 int r;
 	
-	log("SIGHUP received, reloading configuration");
+	log("SIGHUP received, reloading configuration","");
 	for(t=targets;t;t=t->next)
 		for(al=t->active_alarms;al;al=an){
 			an=al->next;
