@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.34 2002/10/24 06:31:57 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.35 2002/10/24 08:24:50 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -434,10 +434,9 @@ struct delayed_report *dr,*tdr;
 
 	if (a->combine_interval>0){
 		for(tdr=delayed_reports;tdr!=NULL && tdr->next!=NULL;tdr=tdr->next){
-			if (strcmp(tdr->t.name,t->name)==0 && tdr->a==a && tdr->on==on){
-				return;
-			}
+			if (strcmp(tdr->t.name,t->name)==0 && tdr->a==a && tdr->on==on) return;
 		}
+		if (strcmp(tdr->t.name,t->name)==0 && tdr->a==a && tdr->on==on) return;
 		dr=NEW(struct delayed_report,1);
 		assert(dr!=NULL);
 		dr->t=*t;
@@ -721,7 +720,8 @@ struct target *t;
 struct active_alarm_list *al,*an;
 struct alarm_cfg *a;
 int r;
-	
+
+	while(delayed_reports!=NULL) make_delayed_reports();
 	for(t=targets;t;t=t->next)
 		for(al=t->active_alarms;al;al=an){
 			an=al->next;
@@ -976,6 +976,7 @@ struct piped_info pi;
 #ifdef FORKED_RECEIVER
 	kill(pid,SIGTERM);
 #endif
+	while(delayed_reports!=NULL) make_delayed_reports();
 	free_targets();
 	if (macros_buf!=NULL) free(macros_buf);
 }
