@@ -13,3 +13,4 @@ mkinstalldirs
 stamp-h*
 tags
 ylwrap
+autom4te.cache
