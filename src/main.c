@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.9 2002/07/17 18:05:31 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.10 2002/07/18 08:47:20 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -75,6 +75,7 @@ struct config default_config={
 };
 
 int foreground=1;
+char *config_file=CONFIG;
 
 int icmp_sock;
 int icmp6_sock;
@@ -104,6 +105,7 @@ void usage(const char *name){
 	fprintf(stderr,"\nOPTIONS:\n");
 	fprintf(stderr,"\t-f\trun in foreground.\n");
 	fprintf(stderr,"\t-d\tdebug on.\n");
+	fprintf(stderr,"\t-c <file>\talternate config file path.\n");
 	fprintf(stderr,"\t-h\tthis message.\n");
 }
 
@@ -117,7 +119,7 @@ int i;
 int do_debug=0;
 int stay_foreground=0;
 
-	while((c=getopt(argc,argv,"fdh")) != -1){
+	while((c=getopt(argc,argv,"fdhc:")) != -1){
 		switch(c){
 			case 'f':
 				stay_foreground=1;
@@ -128,6 +130,12 @@ int stay_foreground=0;
 			case 'h':
 				usage(argv[0]);
 				return 1;
+			case 'c':
+				config_file=optarg;
+				break;
+			case ':':
+				fprintf (stderr, "Command-line option argument missing.\n");
+				return 1;
 			case '?':
 				fprintf (stderr, "Unknown option `-%c'.\n", optopt);
 				return 1;
@@ -135,8 +143,8 @@ int stay_foreground=0;
 				return 1;
 		}
 	}
-	if (load_config(CONFIG)){
-		logit("Couldn't read config (\"%s\").",CONFIG);
+	if (load_config(config_file)){
+		logit("Couldn't read config (\"%s\").",config_file);
 		return 1;
 	}
 	if (do_debug) config->debug=1;

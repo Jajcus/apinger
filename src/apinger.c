@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.14 2002/07/17 17:56:23 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.15 2002/07/18 08:47:20 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -566,7 +566,7 @@ int r;
 			a=al->alarm;
 			toggle_alarm(t,a,-1);
 		}
-	r=load_config(CONFIG);
+	r=load_config(config_file);
 	if (r==0) configure_targets();
 }
 

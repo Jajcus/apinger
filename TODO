@@ -1,7 +1,6 @@
 - fix bugs
-- command line option for alternate config file
 - write state information, so current alarm state can be watched eg. via WWW
 - rrdtool statistics generation support
 
 --
-$Id: TODO,v 1.4 2002/07/17 09:32:51 cvs-jajcus Exp $
+$Id: TODO,v 1.5 2002/07/18 08:48:10 cvs-jajcus Exp $

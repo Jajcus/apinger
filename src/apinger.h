@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.9 2002/07/17 17:56:23 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.10 2002/07/18 08:47:20 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -92,6 +92,7 @@ struct trace_info {
 struct target *targets;
 
 extern int foreground;
+extern char *config_file;
 
 extern int icmp_sock;
 extern int icmp6_sock;
