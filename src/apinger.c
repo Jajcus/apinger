@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.39 2002/12/20 09:21:40 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.40 2003/03/26 11:24:59 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -81,13 +81,13 @@ static char msgid_buf[1024];
 static char hostnamebuf[256]="-";
 
 char *gen_msgid(struct target *t,char *suff){
-struct timeval cur_time,tv;
+struct timeval cur_time;
 	
 	gettimeofday(&cur_time,NULL);
 	
 	gethostname(hostnamebuf,sizeof(hostnamebuf));
-	sprintf(msgid_buf,"<%p.%i.%s@%s>",
-				t,cur_time.tv_usec/1000+cur_time.tv_sec*1000,
+	sprintf(msgid_buf,"<%p.%li.%s@%s>",
+				t,(long int)(cur_time.tv_usec/1000+cur_time.tv_sec*1000),
 				suff,hostnamebuf);
 	return strdup(msgid_buf);
 }
@@ -95,7 +95,6 @@ struct timeval cur_time,tv;
 char *alarm_on(struct target *t,struct alarm_cfg *a){
 struct active_alarm_list *al;
 struct timeval cur_time,tv;
-int r;
 
 	gettimeofday(&cur_time,NULL);
 	al=NEW(struct active_alarm_list,1);
