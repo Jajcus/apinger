@@ -1,4 +1,3 @@
-- remove hardcoded paths (eg. to the config file)
-- don't fire "loss" alarm when "down" alarm is on
+- fix bugs
 - write state information, so current alarm state can be watched eg. via WWW
 - rrdtool statistics generation support
