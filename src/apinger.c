@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.22 2002/07/23 18:24:44 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.23 2002/07/26 08:39:12 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -49,6 +49,17 @@
 #else
 # define assert(cond)
 #endif
+
+struct delayed_report {
+	int on;
+	int thisid,lastid;
+	struct alarm_cfg *a;
+	struct target t;
+	struct timeval timestamp;
+	struct delayed_report *next;
+};
+
+struct delayed_report *delayed_reports=NULL;
 
 struct timeval operation_started;
 
@@ -126,7 +137,7 @@ time_t tim;
 			values[n]=t->name;
 			break;
 		case 'T':
-			values[n]=t->config->description;
+			values[n]=t->description;
 			break;
 		case 'a':
 			values[n]=a->name;
@@ -238,7 +249,7 @@ time_t tm;
 	else
 		fprintf(f,"alarm canceled: %s\n",a->name);
 	fprintf(f,"Target: %s\n",t->name);
-	fprintf(f,"Description: %s\n",t->config->description);
+	fprintf(f,"Description: %s\n",t->description);
 	fprintf(f,"Probes sent: %i\n",t->last_sent+1);
 	fprintf(f,"Replies received: %i\n",t->received);
 	fprintf(f,"Last reply received: #%i %s",t->last_received,
@@ -253,25 +264,12 @@ time_t tm;
 	}
 }
 
-void toggle_alarm(struct target *t,struct alarm_cfg *a,int on){
+void make_reports(struct target *t,struct alarm_cfg *a,int on,int thisid,int lastid){
 FILE *p;
 char buf[1024];
-int ret;
 char *mailto,*mailfrom,*mailenvfrom;
+int ret;
 const char *command;
-unsigned thisid,lastid;
-
-	if (on>0){
-		logit("ALARM: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
-		thisid=alarm_on(t,a);
-	}
-	else{
-		lastid=alarm_off(t,a);
-		if (on==0)
-			logit("alarm canceled: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
-		else
-			logit("alarm canceled (config reload): %s(%s)  *** %s ***",t->config->description,t->name,a->name);
-	}
 
 	mailto=a->mailto;
 	mailenvfrom=a->mailenvfrom;
@@ -360,6 +358,95 @@ unsigned thisid,lastid;
 	}
 }
 
+void make_delayed_reports(void){
+struct alarm_cfg *alarm;
+struct target target;
+int on,thisid,lastid;
+struct delayed_report *dr,*pdr,*ndr;
+int names_len,descriptions_len;
+char *names,*descriptions;
+	
+
+	if (delayed_reports==NULL) return;
+	on=delayed_reports->on;
+	thisid=delayed_reports->thisid;
+	lastid=delayed_reports->lastid;
+	alarm=delayed_reports->a;
+	target=delayed_reports->t;
+	names_len=descriptions_len=0;
+	for(dr=delayed_reports;dr;dr=dr->next){
+		if (dr->a==alarm && dr->on==on){
+			names_len+=strlen(dr->t.name)+1;
+			descriptions_len+=strlen(dr->t.description)+1;
+		}
+	}
+
+	names=(char *)malloc(names_len);
+	names[0]='\000';
+	descriptions=(char *)malloc(descriptions_len);
+	descriptions[0]='\000';
+
+	pdr=NULL;
+	for(dr=delayed_reports;dr;dr=ndr){
+		ndr=dr->next;
+		if (dr->a==alarm && dr->on==on){
+			if (names[0]!='\000') strcat(names,",");
+			strcat(names,dr->t.name);
+			if (descriptions[0]!='\000') strcat(descriptions,",");
+			strcat(descriptions,dr->t.description);
+			if (pdr!=NULL) 
+				pdr->next=ndr;
+			else
+				delayed_reports=ndr;
+			free(dr);
+		}
+		else pdr=dr;
+	}
+
+	target.name=names;
+	target.description=descriptions;
+
+	make_reports(&target,alarm,on,thisid,lastid);
+
+	free(names);
+	free(descriptions);
+}
+
+void toggle_alarm(struct target *t,struct alarm_cfg *a,int on){
+unsigned thisid,lastid;
+struct delayed_report *dr,*tdr;
+
+	if (on>0){
+		logit("ALARM: %s(%s)  *** %s ***",t->description,t->name,a->name);
+		thisid=alarm_on(t,a);
+	}
+	else{
+		lastid=alarm_off(t,a);
+		if (on==0)
+			logit("alarm canceled: %s(%s)  *** %s ***",t->description,t->name,a->name);
+		else
+			logit("alarm canceled (config reload): %s(%s)  *** %s ***",t->description,t->name,a->name);
+	}
+
+	if (a->combine_interval>0){
+		dr=(struct delayed_report *)malloc(sizeof(struct delayed_report));
+		assert(dr!=NULL);
+		dr->t=*t;
+		dr->a=a;
+		dr->thisid=thisid;
+		dr->lastid=lastid;
+		dr->on=on;
+		gettimeofday(&dr->timestamp,NULL);
+		dr->next=NULL;
+		for(tdr=delayed_reports;tdr!=NULL && tdr->next!=NULL;tdr=tdr->next);
+		if (tdr==NULL)
+			delayed_reports=dr;
+		else
+			tdr->next=dr;
+	}
+	else make_reports(t,a,on,thisid,lastid);
+}
+
 void send_probe(struct target *t,struct timeval *cur_time){
 int i,i1;
 char buf[100];
@@ -367,7 +454,7 @@ int seq;
 
 	timeradd(cur_time,&t->interval_tv,&t->next_probe);
 	seq=++t->last_sent;
-	debug("Sending ping #%i to %s (%s)",seq,t->config->description,t->name);
+	debug("Sending ping #%i to %s (%s)",seq,t->description,t->name);
 	strftime(buf,100,"%b %d %H:%M:%S",localtime(&t->next_probe.tv_sec));
 	debug("Next one scheduled for %s",buf);
 	if (t->addr.addr.sa_family==AF_INET) send_icmp_probe(t,cur_time,seq);
@@ -419,8 +506,11 @@ struct alarm_cfg *a;
 	t->last_received_tv=time_recv;
 	timersub(&time_recv,&ti->timestamp,&tv);
 	delay=tv.tv_sec*1000.0+((double)tv.tv_usec)/1000.0;
-	debug("#%i from %s(%s) delay: %4.2fms",ti->seq,t->config->description,t->name,delay);
-	tmp=t->rbuf[t->received%t->config->avg_delay_samples];
+	debug("#%i from %s(%s) delay: %4.2fms",ti->seq,t->description,t->name,delay);
+	if (t->received>t->config->avg_delay_samples)
+		tmp=t->rbuf[t->received%t->config->avg_delay_samples];
+	else
+		tmp=0;
 	t->rbuf[t->received%t->config->avg_delay_samples]=delay;
 	t->delay_sum+=delay-tmp;
 	t->received++;
@@ -499,6 +589,7 @@ int r;
 				free(al);
 			}
 			free(t->name);
+			free(t->description);
 			free(t);
 		}
 		else pt=t;
@@ -540,6 +631,7 @@ int r;
 			t=(struct target *)malloc(sizeof(struct target));
 			memset(t,0,sizeof(struct target));
 			t->name=strdup(tc->name);
+			t->description=strdup(tc->description);
 			t->addr=addr;
 			t->next=targets;
 			targets=t;
@@ -604,7 +696,7 @@ time_t tm;
 	fprintf(f,"%s\n",ctime(&tm));
 	for(t=targets;t;t=t->next){
 		fprintf(f,"Target: %s\n",t->name);
-		fprintf(f,"Description: %s\n",t->config->description);
+		fprintf(f,"Description: %s\n",t->description);
 		if (t->received>=t->config->avg_delay_samples){
 			fprintf(f,"Average delay: %0.2fms\n",
 				t->delay_sum/t->config->avg_delay_samples);
@@ -629,7 +721,7 @@ time_t tm;
 
 void main_loop(void){
 struct target *t;
-struct timeval cur_time,next_status,tv;
+struct timeval cur_time,next_status,tv,next_report={0,0};
 struct pollfd pfd[2];
 int timeout;
 int npfd=0;
@@ -692,9 +784,23 @@ struct alarm_cfg *a;
 			if (!timerisset(&next_probe) || timercmp(&next_status,&next_probe,<))
 				next_probe=next_status;
 		}
+		if (delayed_reports){
+			if (timerisset(&next_report) && timercmp(&next_report,&cur_time,<)){
+				make_delayed_reports();
+				timerclear(&next_report);
+			}
+		}
+		if (delayed_reports){
+			if (!timerisset(&next_report)){
+				tv.tv_sec=delayed_reports->a->combine_interval/1000;
+				tv.tv_usec=delayed_reports->a->combine_interval*1000;
+				timeradd(&delayed_reports->timestamp,&tv,&next_report);
+			}
+			if (!timerisset(&next_probe) || timercmp(&next_report,&next_probe,<))
+				next_probe=next_report;
+		}
 		strftime(buf,100,"%b %d %H:%M:%S",localtime(&next_probe.tv_sec));
 		debug("Next event scheduled for %s",buf);
-		gettimeofday(&cur_time,NULL);
 		if (timercmp(&next_probe,&cur_time,<)){
 			timeout=0;
 		}

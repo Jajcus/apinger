@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.11 2002/07/18 09:33:06 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.12 2002/07/26 08:39:12 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -55,6 +55,7 @@ union addr {
 
 struct target {
 	char *name;		/* name (IP address as string) */
+	char *description;	/* description */
 	
 	struct timeval interval_tv;
 	union addr addr;	/* target address */

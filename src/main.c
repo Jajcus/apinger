@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.13 2002/07/18 12:32:30 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.14 2002/07/26 08:39:13 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -56,6 +56,7 @@ struct config default_config={
 				NULL,		/* command off */
 				NULL,		/* pipe on */
 				NULL,		/* pipe off */
+				0,		/* combine_interval */
 				{},		/* params */
 				NULL		/* next */
 		},

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser2.l,v 1.7 2002/07/18 10:35:43 cvs-jajcus Exp $
+ *  $Id: cfgparser2.l,v 1.8 2002/07/26 08:39:12 cvs-jajcus Exp $
  */
 
 
@@ -74,6 +74,7 @@ alarms		{ LOC; LOCINC; return ALARMS; }
 avg_delay_samples	{ LOC; LOCINC; return AVG_DELAY_SAMPLES; }
 avg_loss_delay_samples	{ LOC; LOCINC; return AVG_LOSS_DELAY_SAMPLES; }
 avg_loss_samples	{ LOC; LOCINC; return AVG_LOSS_SAMPLES; }
+combine		{ LOC; LOCINC; return COMBINE; }
 command		{ LOC; LOCINC; return COMMAND; }
 debug		{ LOC; LOCINC; return DEBUG; }
 default		{ LOC; LOCINC; return DEFAULT; }

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.h,v 1.9 2002/07/18 12:32:30 cvs-jajcus Exp $
+ *  $Id: conf.h,v 1.10 2002/07/26 08:39:13 cvs-jajcus Exp $
  */
 
 #ifndef conf_h
@@ -49,6 +49,7 @@ struct alarm_cfg {
 	char *command_off;
 	char *pipe_on;
 	char *pipe_off;
+	int combine_interval;
 	union {
 		int val;
 		struct {
