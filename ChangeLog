@@ -1,3 +1,7 @@
+2002-07-15  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* README: - typo
+
 2002-07-14  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/Makefile.am, src/apinger.c, src/apinger.h, src/cfgparser1.y, src/cfgparser2.l, src/cfgtest.c, src/conf.c, src/debug.c, src/debug.h, src/icmp.c, src/icmp6.c, src/main.c, autogen.sh, configure.ac:
