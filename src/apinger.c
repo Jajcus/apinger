@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.23 2002/07/26 08:39:12 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.24 2002/09/24 11:37:53 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -307,12 +307,10 @@ const char *command;
 		if (!WIFEXITED(ret)){
 			logit("Error while sending mail.\n");
 			logit("sendmail terminated abnormally.\n");
-			return;
 		}
-		if (WEXITSTATUS(ret)!=0){
+		else if (WEXITSTATUS(ret)!=0){
 			logit("Error while sending mail.\n");
 			logit("sendmail exited with status: %i\n",WEXITSTATUS(ret));
-			return;
 		}
 	}
 	if (on>0) command=a->pipe_on;
@@ -324,19 +322,18 @@ const char *command;
 		if (!p){
 			logit("Couldn't pipe report through %s",command);
 			myperror("popen");
-			return;
 		}
-		write_report(p,t,a,on);
-		ret=pclose(p);
-		if (!WIFEXITED(ret)){
-			logit("Error while piping report.");
-			logit("command (%s) terminated abnormally.",command);
-			return;
-		}
-		if (WEXITSTATUS(ret)!=0){
-			logit("Error while piping report.");
-			logit("command (%s) exited with status: %i",command,WEXITSTATUS(ret));
-			return;
+		else {
+			write_report(p,t,a,on);
+			ret=pclose(p);
+			if (!WIFEXITED(ret)){
+				logit("Error while piping report.");
+				logit("command (%s) terminated abnormally.",command);
+			}
+			else if (WEXITSTATUS(ret)!=0){
+				logit("Error while piping report.");
+				logit("command (%s) exited with status: %i",command,WEXITSTATUS(ret));
+			}
 		}
 	}
 	if (on>0) command=a->command_on;
@@ -346,14 +343,12 @@ const char *command;
 		debug("Starting: %s",command);
 		ret=system(command);
 		if (!WIFEXITED(ret)){
-			logit("Error while piping report.");
+			logit("Error while starting command.");
 			logit("command (%s) terminated abnormally.",command);
-			return;
 		}
-		if (WEXITSTATUS(ret)!=0){
-			logit("Error while piping report.");
+		else if (WEXITSTATUS(ret)!=0){
+			logit("Error while starting command.");
 			logit("command (%s) exited with status: %i",command,WEXITSTATUS(ret));
-			return;
 		}
 	}
 }
@@ -419,8 +414,10 @@ struct delayed_report *dr,*tdr;
 	if (on>0){
 		logit("ALARM: %s(%s)  *** %s ***",t->description,t->name,a->name);
 		thisid=alarm_on(t,a);
+		lastid=0;
 	}
 	else{
+		thisid=0;
 		lastid=alarm_off(t,a);
 		if (on==0)
 			logit("alarm canceled: %s(%s)  *** %s ***",t->description,t->name,a->name);
@@ -571,6 +568,7 @@ struct target_cfg *tc;
 struct alarm_list *al,*nal;
 union addr addr;
 int r;
+int l;
 
 	/* delete all not configured targets */
 	pt=NULL;
@@ -588,6 +586,8 @@ int r;
 				nal=al->next;
 				free(al);
 			}
+			free(t->queue);
+			free(t->rbuf);
 			free(t->name);
 			free(t->description);
 			free(t);
@@ -639,20 +639,20 @@ int r;
 		t->config=tc;
 		t->interval_tv.tv_usec=(tc->interval%1000)*1000;
 		t->interval_tv.tv_sec=tc->interval/1000;
+		l=sizeof(char)*(tc->avg_loss_delay_samples+tc->avg_loss_samples);
 		if (t->queue)
-			t->queue=(char *)realloc(t->queue,
-					sizeof(char)*(tc->avg_loss_delay_samples
-							+tc->avg_loss_samples));
+			t->queue=(char *)realloc(t->queue,l);
 		else
-			t->queue=(char *)malloc(
-					sizeof(char)*(tc->avg_loss_delay_samples
-							+tc->avg_loss_samples));
+			t->queue=(char *)malloc(l);
 		assert(t->queue!=NULL);
+		memset(t->queue,0,l);
+		l=sizeof(double)*(tc->avg_delay_samples);
 		if (t->rbuf)
-			t->rbuf=(double *)realloc(t->rbuf,sizeof(double)*(tc->avg_delay_samples));
+			t->rbuf=(double *)realloc(t->rbuf,l);
 		else
-			t->rbuf=(double *)malloc(sizeof(double)*(tc->avg_delay_samples));
+			t->rbuf=(double *)malloc(l);
 		assert(t->rbuf!=NULL);
+		memset(t->rbuf,0,l);
 	}
 	if (targets==NULL){
 		logit("No usable targets found, exiting");
@@ -660,6 +660,26 @@ int r;
 	}
 	gettimeofday(&operation_started,NULL);
 }
+
+void free_targets(void){
+struct target *t,*nt;
+struct alarm_list *al,*nal;
+
+	/* delete all not configured targets */
+	for(t=targets;t;t=nt){
+		nt=t->next;
+		for(al=t->active_alarms;al;al=nal){
+			nal=al->next;
+			free(al);
+		}
+		free(t->queue);
+		free(t->rbuf);
+		free(t->name);
+		free(t->description);
+		free(t);
+	}
+}
+
 
 void reload_config(void){
 struct target *t;
@@ -829,6 +849,8 @@ struct alarm_cfg *a;
 			reload_config();
 		}
 	}
+	free_targets();
+	if (macros_buf!=NULL) free(macros_buf);
 }
 
 
