@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.16 2002/10/03 12:37:09 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.17 2002/10/04 13:39:01 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -98,6 +98,14 @@ struct trace_info {
 	void *target_id;
 };
 
+#ifdef FORKED_RECEIVER
+struct piped_info {
+	struct trace_info ti;
+	int icmp_seq;
+	struct timeval recv_timestamp;
+};
+#endif
+
 struct target *targets;
 
 extern int foreground;
@@ -111,12 +119,15 @@ extern struct timeval next_probe;
 
 int make_icmp_socket(void);
 void recv_icmp(void);
-void send_icmp_probe(struct target *t,struct timeval *cur_time,int seq);
+void send_icmp_probe(struct target *t,int seq);
 
 int make_icmp6_socket(void);
 void recv_icmp6(void);
-void send_icmp6_probe(struct target *t,struct timeval *cur_time,int seq);
+void send_icmp6_probe(struct target *t,int seq);
 
+#ifdef FORKED_RECEIVER
+void pipe_reply(struct timeval time_recv,int seq,struct trace_info *ti);
+#endif
 void analyze_reply(struct timeval time_recv,int seq,struct trace_info *ti);
 void main_loop(void);
 

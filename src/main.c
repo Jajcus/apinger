@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.18 2002/10/03 12:37:09 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.19 2002/10/04 13:39:01 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -36,6 +36,12 @@
 #endif
 #ifdef HAVE_GRP_H
 # include <grp.h>
+#endif
+#ifdef HAVE_SYS_WAIT_H
+# include <sys/wait.h>
+#endif
+#ifdef HAVE_ERRNO_H
+# include <errno.h>
 #endif
 
 #include "conf.h"
@@ -118,6 +124,19 @@ void signal_handler(int signum){
 		interrupted_by=signum;
 	}
 }
+
+#ifdef FORKED_RECEIVER
+void sigchld_handler (int signum) {
+int pid, status, serrno;
+
+	serrno = errno;
+	while (1) {
+		   pid = waitpid (WAIT_ANY, &status, WNOHANG);
+		   if (pid <= 0) break;
+	}
+	errno = serrno;
+}
+#endif
 
 void usage(const char *name){
 	fprintf(stderr,"Alarm Pinger " PACKAGE_VERSION " (c) 2002 Jacek Konieczny <jajcus@pld.org.pl>\n");
@@ -264,6 +283,9 @@ char *graph_location="/apinger/";
 	signal(SIGHUP,signal_handler);
 	signal(SIGUSR1,signal_handler);
 	signal(SIGPIPE,signal_handler);
+#ifdef FORKED_RECEIVER
+	signal(SIGCHLD,sigchld_handler);
+#endif
 	main_loop();
 	if (icmp_sock>=0) close(icmp_sock);
 	if (icmp6_sock>=0) close(icmp6_sock);

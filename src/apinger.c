@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.29 2002/10/03 12:37:09 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.30 2002/10/04 13:39:01 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -482,7 +482,7 @@ int ret;
 	return ret;
 }
 
-void send_probe(struct target *t,struct timeval *cur_time){
+void send_probe(struct target *t){
 int i,i1;
 char buf[100];
 int seq;
@@ -491,9 +491,9 @@ int seq;
 	debug("Sending ping #%i to %s (%s)",seq,t->description,t->name);
 	strftime(buf,100,"%b %d %H:%M:%S",localtime(&t->next_probe.tv_sec));
 	debug("Next one scheduled for %s",buf);
-	if (t->addr.addr.sa_family==AF_INET) send_icmp_probe(t,cur_time,seq);
+	if (t->addr.addr.sa_family==AF_INET) send_icmp_probe(t,seq);
 #ifdef HAVE_IPV6
-	else if (t->addr.addr.sa_family==AF_INET6) send_icmp6_probe(t,cur_time,seq);
+	else if (t->addr.addr.sa_family==AF_INET6) send_icmp6_probe(t,seq);
 #endif
 
 	if (t->last_sent>=t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
@@ -777,20 +777,29 @@ time_t tm;
 	fclose(f);
 }
 
-void main_loop(void){
-struct target *t;
-struct timeval cur_time,next_status={0,0},tv,next_report={0,0},next_rrd_update={0,0};
+#ifdef FORKED_RECEIVER
+int receiver_pipe=0;
+
+void pipe_reply(struct timeval time_recv,int icmp_seq,struct trace_info *ti){
+struct piped_info pi;
+
+	pi.recv_timestamp=time_recv;
+	pi.icmp_seq=icmp_seq;
+	pi.ti=*ti;
+	write(receiver_pipe,&pi,sizeof(pi));
+}
+
+void receiver_loop(void){
 struct pollfd pfd[2];
-int timeout;
 int npfd=0;
 int i;
-char buf[100];	
-int downtime;
-struct alarm_list *al,*nal;
-struct active_alarm_list *aal;
-struct alarm_cfg *a;
 
-	configure_targets();
+	signal(SIGTERM,SIG_DFL);
+	signal(SIGINT,SIG_DFL);
+	signal(SIGHUP,SIG_DFL);
+	signal(SIGUSR1,SIG_DFL);
+	signal(SIGPIPE,SIG_DFL);
+	
 	if (icmp_sock){
 		pfd[npfd].events=POLLIN|POLLERR|POLLHUP|POLLNVAL;
 		pfd[npfd].revents=0;
@@ -801,6 +810,70 @@ struct alarm_cfg *a;
 		pfd[npfd++].fd=icmp6_sock;
 		pfd[npfd].revents=0;
 	}
+	while(1){
+		poll(pfd,npfd,-1);
+		for(i=0;i<npfd;i++){
+			if (!pfd[i].revents&POLLIN) continue;
+			if (pfd[i].fd==icmp_sock) recv_icmp();
+			else if (pfd[i].fd==icmp6_sock) recv_icmp6();
+			pfd[i].revents=0;
+		}
+	};
+}
+#endif
+
+void main_loop(void){
+struct target *t;
+struct timeval cur_time,next_status={0,0},tv,next_report={0,0},next_rrd_update={0,0};
+struct pollfd pfd[2];
+int timeout;
+int npfd=0;
+int i,r;
+char buf[100];	
+int downtime;
+struct alarm_list *al,*nal;
+struct active_alarm_list *aal;
+struct alarm_cfg *a;
+int recv_pipe[2];
+int pid;
+#ifdef FORKED_RECEIVER
+struct piped_info pi;
+#endif
+
+	configure_targets();
+#ifdef FORKED_RECEIVER
+	r=pipe(recv_pipe);
+	if (r){
+		myperror("pipe");
+		exit(1);
+	}
+	pid=fork();
+	if (pid==-1){
+		myperror("pipe");
+		exit(1);
+	}
+	else if (pid==0){
+		close(recv_pipe[0]);
+		receiver_pipe=recv_pipe[1];
+		receiver_loop();
+		exit(0);
+	}
+	close(recv_pipe[1]);
+	pfd[npfd].events=POLLIN|POLLERR|POLLHUP|POLLNVAL;
+	pfd[npfd].revents=0;
+	pfd[npfd++].fd=recv_pipe[0];
+#else
+	if (icmp_sock){
+		pfd[npfd].events=POLLIN|POLLERR|POLLHUP|POLLNVAL;
+		pfd[npfd].revents=0;
+		pfd[npfd++].fd=icmp_sock;
+	}
+	if (icmp6_sock){
+		pfd[npfd].events=POLLIN|POLLERR|POLLHUP|POLLNVAL;
+		pfd[npfd++].fd=icmp6_sock;
+		pfd[npfd].revents=0;
+	}
+#endif
 	if (config->status_interval){
 		gettimeofday(&cur_time,NULL);
 		tv.tv_sec=config->status_interval/1000;
@@ -827,7 +900,7 @@ struct alarm_cfg *a;
 					toggle_alarm(t,a,1);
 			}
 			if (scheduled_event(&(t->next_probe),&cur_time,t->config->interval)){
-				send_probe(t,&cur_time);
+				send_probe(t);
 			}
 			for(aal=t->active_alarms;aal;aal=aal->next){
 				a=aal->alarm;
@@ -882,8 +955,16 @@ struct alarm_cfg *a;
 		poll(pfd,npfd,timeout);
 		for(i=0;i<npfd;i++){
 			if (!pfd[i].revents&POLLIN) continue;
+#ifdef FORKED_RECEIVER
+			if (pfd[i].fd==recv_pipe[0]){
+				r=read(recv_pipe[0],&pi,sizeof(pi));
+				if (r==sizeof(pi))
+					analyze_reply(pi.recv_timestamp,pi.icmp_seq,&pi.ti);
+			}
+#else
 			if (pfd[i].fd==icmp_sock) recv_icmp();
 			else if (pfd[i].fd==icmp6_sock) recv_icmp6();
+#endif
 			pfd[i].revents=0;
 		}
 		if (status_request){
@@ -902,5 +983,4 @@ struct alarm_cfg *a;
 	free_targets();
 	if (macros_buf!=NULL) free(macros_buf);
 }
-
 

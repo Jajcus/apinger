@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: icmp.c,v 1.10 2002/07/17 09:32:51 cvs-jajcus Exp $
+ *  $Id: icmp.c,v 1.11 2002/10/04 13:39:01 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -44,6 +44,9 @@
 #endif
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
+#endif
+#ifdef HAVE_SCHED_H
+# include <sched.h>
 #endif
 #include "debug.h"
 
@@ -112,10 +115,11 @@ u_short in_cksum(const u_short *addr, register int len, u_short csum){
         return (answer);
 }
 
-void send_icmp_probe(struct target *t,struct timeval *cur_time,int seq){
+void send_icmp_probe(struct target *t,int seq){
 static char buf[1024];
 struct icmp *p=(struct icmp *)buf;
 struct trace_info ti;
+struct timeval cur_time;
 int size;
 int ret;
 
@@ -126,7 +130,12 @@ int ret;
 	p->icmp_seq=seq%65536;
 	p->icmp_id=ident;
 
-	ti.timestamp=*cur_time;
+#ifdef HAVE_SCHED_YIELD
+	/* Give away our time now, or we may be stopped between gettimeofday() and sendto() */ 
+	sched_yield();
+#endif
+	gettimeofday(&cur_time,NULL);
+	ti.timestamp=cur_time;
 	ti.target_id=t;
 	ti.seq=seq;
 	memcpy(p+1,&ti,sizeof(ti));
@@ -180,7 +189,11 @@ socklen_t sl;
 		debug("Packet data truncated.");
 		return;
 	}
+#ifdef FORKED_RECEIVER
+	pipe_reply(time_recv,icmp->icmp_seq,(struct trace_info*)(icmp+1));
+#else
 	analyze_reply(time_recv,icmp->icmp_seq,(struct trace_info*)(icmp+1));
+#endif
 }
 
 int make_icmp_socket(void){

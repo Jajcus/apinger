@@ -1,4 +1,4 @@
-# $Id: configure.ac,v 1.20 2002/10/03 12:37:08 cvs-jajcus Exp $
+# $Id: configure.ac,v 1.21 2002/10/04 13:39:00 cvs-jajcus Exp $
 
 # Process this file with autoconf to produce a configure script.
 AC_INIT([apinger], [0.5-test1], [jajcus@pld.org.pl])
@@ -25,7 +25,7 @@ AC_CHECK_HEADERS([arpa/inet.h errno.h malloc.h \
 		stddef.h stdlib.h string.h sys/socket.h \
 		sys/time.h syslog.h unistd.h time.h \
 		assert.h sys/poll.h signal.h pwd.h grp.h stdarg.h\
-		limits.h])
+		limits.h sys/wait.h sched.h])
 AC_HEADER_TIME
 
 JK_LINUX_FILTER
@@ -47,6 +47,8 @@ AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([gettimeofday inet_ntoa memset socket \
 strdup strerror strpbrk poll vsyslog time popen setvbuf access],
 	[],AC_MSG_ERROR(some needed function is missing))
+
+AC_CHECK_FUNCS(sched_yield)
 
 AC_ARG_ENABLE(forked-receiver,[AC_HELP_STRING([--enable-forked-receiver],
 	      			[Create subprocess for receiving pings.])],
@@ -81,8 +83,8 @@ AC_ARG_WITH(rrdtool,[AC_HELP_STRING([--with-rrdtool=path],[Location of rrdtool p
 AC_ARG_WITH(rrdcgi,[AC_HELP_STRING([--with-rrdcgi=path],[Location of rrdcgi program])],
 	[RRDCGI="$withval"],[AC_PATH_PROG([RRDCGI],[rrdcgi],[/usr/bin/rrdcgi])])
 
-AC_DEFINE_UNQUOTED(RRDTOOL,\"$RRDTOOL\",[Set to the path of rrdtool program])
-AC_DEFINE_UNQUOTED(RRDCGI,\"$RRDCGI\",[Set to the path of rrdcgi program])
+AC_DEFINE_UNQUOTED(RRDTOOL,"$RRDTOOL",[Set to the path of rrdtool program])
+AC_DEFINE_UNQUOTED(RRDCGI,"$RRDCGI",[Set to the path of rrdcgi program])
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
