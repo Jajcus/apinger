@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.16 2002/07/18 09:33:06 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.17 2002/07/18 10:07:45 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -61,17 +61,22 @@ struct alarm_list *al;
 	return 0;
 }
 
-void alarm_on(struct target *t,struct alarm_cfg *a){
+unsigned alarm_on(struct target *t,struct alarm_cfg *a){
 struct alarm_list *al;
+struct timeval tv;
 
+	gettimeofday(&tv,NULL);
 	al=(struct alarm_list *)malloc(sizeof(struct alarm_list));
 	al->next=t->active_alarms;
 	al->alarm=a;
+	al->id=tv.tv_usec/1000+tv.tv_sec*1000;
 	t->active_alarms=al;
+	return al->id;
 }
 
-void alarm_off(struct target *t,struct alarm_cfg *a){
+unsigned alarm_off(struct target *t,struct alarm_cfg *a){
 struct alarm_list *al,*pa,*na;
+int id;
 
 	pa=NULL;
 	for(al=t->active_alarms;al;al=na){
@@ -81,12 +86,14 @@ struct alarm_list *al,*pa,*na;
 				pa->next=na;
 			else
 				t->active_alarms=na;
+			id=al->id;
 			free(al);
-			return;
+			return id;
 		}
 		else pa=al;
 	}
 	logit("Alarm '%s' not found in '%s'",a->name,t->name);
+	return 0;
 }
 
 static char *macros_buf=NULL;
@@ -246,13 +253,14 @@ char buf[1024];
 int ret;
 char *mailto,*mailfrom,*mailenvfrom;
 const char *command;
+unsigned thisid,lastid;
 
 	if (on>0){
 		logit("ALARM: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
-		alarm_on(t,a);
+		thisid=alarm_on(t,a);
 	}
 	else{
-		alarm_off(t,a);
+		lastid=alarm_off(t,a);
 		if (on==0)
 			logit("alarm cancelled: %s(%s)  *** %s ***",t->config->description,t->name,a->name);
 		else
@@ -290,6 +298,13 @@ const char *command;
 		if (mailfrom) {
 			fprintf(p,"From: %s\n",mailfrom);
 		}
+		gethostname(buf,1024);
+		fprintf(p,"Message-Id: <apinger-%u-%s-%s-%s@%s>\n",
+				thisid,t->name,a->name,(on>0)?"on":"off",buf);
+		if (on<=0)
+			fprintf(p,"References: <apinger-%u-%s-%s-%s@%s>\n",
+				lastid,t->name,a->name,"on",buf);
+				
 		fprintf(p,"\n");
 		write_report(p,t,a,on);
 		ret=pclose(p);
