@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: icmp6.c,v 1.12 2002/10/14 10:23:34 cvs-jajcus Exp $
+ *  $Id: icmp6.c,v 1.13 2002/12/19 08:34:16 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -227,6 +227,6 @@ int opt;
 
 int make_icmp6_socket(void){ return -1; }
 void recv_icmp6(void){}
-void send_icmp6_probe(struct target *t,struct timeval *cur_time,int seq){}
+void send_icmp6_probe(struct target *t,int seq){}
 
 #endif /*HAVE_IPV6*/
