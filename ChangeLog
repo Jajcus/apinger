@@ -1,3 +1,8 @@
+2002-10-24  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/apinger.c:
+	- change in packet loss measurement algorithm (it may fix one problem)
+
 2002-10-21  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/apinger.c: - do not duplicate targets in delayed alarms
