@@ -1,3 +1,7 @@
+2002-10-25  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/apinger.c: - NULL pointer dereference fix
+
 2002-10-24  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* doc/FAQ.xml: - cosmetics
