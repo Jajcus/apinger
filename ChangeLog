@@ -1,5 +1,9 @@
 2002-10-24  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* src/cfgparser1.y:
+	- write pid_file option value to pid_file, not the group setting.  (Patch by
+	  Stephanie Lockwood-Childs)
+
 	* src/apinger.c:
 	- change in packet loss measurement algorithm (it may fix one problem)
 
