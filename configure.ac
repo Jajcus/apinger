@@ -1,7 +1,7 @@
-# $Id: configure.ac,v 1.22 2002/10/14 11:08:00 cvs-jajcus Exp $
+# $Id: configure.ac,v 1.23 2002/10/21 12:32:41 cvs-jajcus Exp $
 
 # Process this file with autoconf to produce a configure script.
-AC_INIT([apinger], [0.5], [jajcus@pld.org.pl])
+AC_INIT([apinger], [0.6-test2], [jajcus@pld.org.pl])
 AC_CONFIG_SRCDIR([src/apinger.c])
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER([config.h])
@@ -52,30 +52,30 @@ AC_CHECK_FUNCS([sched_yield recvmsg])
 
 AC_ARG_ENABLE(forked-receiver,[AC_HELP_STRING([--enable-forked-receiver],
 	      			[Create subprocess for receiving pings.])],
-			      		[],[enable_forked_receiver=auto])
+			      		[],[enable_forked_receiver=no])
 
 if test "x$enable_forked_receiver" = "xyes" ; then
 	AC_DEFINE(FORKED_RECEIVER,[],[Define to enable receiver subprocess])
-else 
-	AC_MSG_CHECKING([if PIPE_BUF is big enough])
-	if test "x$enable_forked_receiver" != "xno" ; then
-		AC_TRY_RUN([
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
-int main(int argc,char **argv){
-	
-	if (PIPE_BUF<1024) return 1;
-	return 0;
-}],
-		[AC_DEFINE(FORKED_RECEIVER,[1],[Define to enable receiver subprocess])
-		AC_MSG_RESULT([yes])],[AC_MSG_RESULT([no])
-					AC_MSG_WARN([Receiver subprocess will not be used.])])
-	fi
+dnl else 
+dnl 	AC_MSG_CHECKING([if PIPE_BUF is big enough])
+dnl 	if test "x$enable_forked_receiver" != "xno" ; then
+dnl 		AC_TRY_RUN([
+dnl #ifdef HAVE_SYS_TYPES_H
+dnl # include <sys/types.h>
+dnl #endif
+dnl #ifdef HAVE_LIMITS_H
+dnl # include <limits.h>
+dnl #endif
+dnl 
+dnl int main(int argc,char **argv){
+dnl 	
+dnl 	if (PIPE_BUF<1024) return 1;
+dnl 	return 0;
+dnl }],
+dnl 		[AC_DEFINE(FORKED_RECEIVER,[1],[Define to enable receiver subprocess])
+dnl 		AC_MSG_RESULT([yes])],[AC_MSG_RESULT([no])
+dnl 					AC_MSG_WARN([Receiver subprocess will not be used.])])
+dnl 	fi
 fi
 
 AC_ARG_WITH(rrdtool,[AC_HELP_STRING([--with-rrdtool=path],[Location of rrdtool program])],
@@ -86,5 +86,5 @@ AC_ARG_WITH(rrdcgi,[AC_HELP_STRING([--with-rrdcgi=path],[Location of rrdcgi prog
 AC_DEFINE_UNQUOTED(RRDTOOL,"$RRDTOOL",[Set to the path of rrdtool program])
 AC_DEFINE_UNQUOTED(RRDCGI,"$RRDCGI",[Set to the path of rrdcgi program])
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile doc/Makefile])
 AC_OUTPUT
