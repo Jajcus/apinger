@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.18 2002/10/16 08:20:10 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.19 2002/12/20 09:19:57 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -56,7 +56,7 @@ union addr {
 struct active_alarm_list {
 	struct alarm_cfg *alarm;
 	struct active_alarm_list *next;
-	int id;
+	char *msgid;
 	int num_repeats;
 	struct timeval next_repeat;
 };
