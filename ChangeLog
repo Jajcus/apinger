@@ -1,5 +1,9 @@
 2002-12-20  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: - ****  Version: 0.6  ****
+
+	* BUGS, NEWS: - last updates for 0.6
+
 	* doc/FAQ.xml: - updates
 
 	* src/apinger.c:
