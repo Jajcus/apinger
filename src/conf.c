@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.c,v 1.11 2002/09/24 11:38:24 cvs-jajcus Exp $
+ *  $Id: conf.c,v 1.12 2002/09/25 10:11:14 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -90,16 +90,14 @@ struct pool_item *pi,*pi1;
 }
 
 struct alarm_cfg * make_alarm(){
-	cur_alarm=(struct alarm_cfg*)pool_malloc(&cur_config.pool,
-							sizeof(struct alarm_cfg));
+	cur_alarm=PNEW(cur_config.pool,struct alarm_cfg,1);
 	memset(cur_alarm,0,sizeof(struct alarm_cfg));
 	return cur_alarm;
 }
 
 struct target_cfg * make_target(){
 
-	cur_target=(struct target_cfg*)pool_malloc(&cur_config.pool,
-						sizeof(struct target_cfg));
+	cur_target=PNEW(cur_config.pool,struct target_cfg,1);
 	memset(cur_target,0,sizeof(struct target_cfg));
 	return cur_target;
 }
@@ -127,7 +125,7 @@ struct alarm_list *al;
 		fprintf(stderr,"Alarm '%s' not found.\n",aname);
 		return list;
 	}
-	al=pool_malloc(&cur_config.pool,sizeof(struct alarm_list));
+	al=PNEW(cur_config.pool,struct alarm_list,1);
 	al->alarm=ac;
 	al->next=list;
 	return al;
@@ -171,6 +169,10 @@ int ret;
 				a->pipe_off=cur_config.alarm_defaults.pipe_off;
 			if (a->combine_interval==0)
 				a->combine_interval=cur_config.alarm_defaults.combine_interval;
+			if (a->repeat_interval==0){
+				a->repeat_interval=cur_config.alarm_defaults.repeat_interval;
+				a->repeat_max=cur_config.alarm_defaults.repeat_max;
+			}
 		}
 		for(t=cur_config.targets;t;t=t->next){
 			if (t->description==NULL)
@@ -195,7 +197,7 @@ int ret;
 			config=NULL;
 		}
 	
-		config=(struct config *)pool_malloc(&cur_config.pool,sizeof(struct config));
+		config=PNEW(cur_config.pool,struct config,1);
 		memcpy(config,&cur_config,sizeof(struct config));
 	}
 	memset(&cur_config,0,sizeof(cur_config));

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.25 2002/09/24 12:32:49 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.26 2002/09/25 10:11:14 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -64,7 +64,7 @@ struct delayed_report *delayed_reports=NULL;
 struct timeval operation_started;
 
 int is_alarm_on(struct target *t,struct alarm_cfg *a){
-struct alarm_list *al;
+struct active_alarm_list *al;
 
 	for(al=t->active_alarms;al;al=al->next)
 		if (al->alarm==a)
@@ -73,20 +73,26 @@ struct alarm_list *al;
 }
 
 unsigned alarm_on(struct target *t,struct alarm_cfg *a){
-struct alarm_list *al;
-struct timeval tv;
+struct active_alarm_list *al;
+struct timeval cur_time,tv;
 
-	gettimeofday(&tv,NULL);
-	al=(struct alarm_list *)malloc(sizeof(struct alarm_list));
+	gettimeofday(&cur_time,NULL);
+	al=NEW(struct active_alarm_list,1);
 	al->next=t->active_alarms;
 	al->alarm=a;
-	al->id=tv.tv_usec/1000+tv.tv_sec*1000;
+	al->id=cur_time.tv_usec/1000+cur_time.tv_sec*1000;
+	al->num_repeats=0;
+	if (a->repeat_interval){
+		tv.tv_sec=a->repeat_interval/1000;
+		tv.tv_usec=(a->repeat_interval%1000)*1000;
+		timeradd(&cur_time,&tv,&al->next_repeat);
+	}
 	t->active_alarms=al;
 	return al->id;
 }
 
 unsigned alarm_off(struct target *t,struct alarm_cfg *a){
-struct alarm_list *al,*pa,*na;
+struct active_alarm_list *al,*pa,*na;
 int id;
 
 	pa=NULL;
@@ -125,7 +131,7 @@ time_t tim;
 		if (string[i]=='\000') break;
 	}
 	if (nmacros==0) return string;
-	values=(char **)malloc(sizeof(char *)*(nmacros+1));
+	values=NEW(char *,(nmacros+1));
 	assert(values!=NULL);
 	l=sl=strlen(string);
 	n=0;
@@ -215,7 +221,7 @@ time_t tim;
 	values[n]=NULL;
 	l+=2;
 	if (macros_buf == NULL){
-		macros_buf=(char *)malloc(l);
+		macros_buf=NEW(char,l);
 		macros_buf_l=l;
 	}else if (macros_buf_l < l){
 		macros_buf=(char *)realloc(macros_buf,l);
@@ -376,9 +382,9 @@ char *names,*descriptions;
 		}
 	}
 
-	names=(char *)malloc(names_len);
+	names=NEW(char,names_len);
 	names[0]='\000';
-	descriptions=(char *)malloc(descriptions_len);
+	descriptions=NEW(char,descriptions_len);
 	descriptions[0]='\000';
 
 	pdr=NULL;
@@ -426,7 +432,7 @@ struct delayed_report *dr,*tdr;
 	}
 
 	if (a->combine_interval>0){
-		dr=(struct delayed_report *)malloc(sizeof(struct delayed_report));
+		dr=NEW(struct delayed_report,1);
 		assert(dr!=NULL);
 		dr->t=*t;
 		dr->a=a;
@@ -483,7 +489,8 @@ double delay,avg_delay,avg_loss;
 double tmp;
 int i;
 int previous_received;
-struct alarm_list *al,*pa,*na;
+struct alarm_list *al;
+struct active_alarm_list *aal,*paa,*naa;
 struct alarm_cfg *a;
 
 	if (icmp_seq!=(ti->seq%65536)){
@@ -529,10 +536,10 @@ struct alarm_cfg *a;
 		avg_loss=0;
 	debug("(avg. loss: %5.1f%%)",avg_loss);
 	
-	pa=NULL;
-	for(al=t->active_alarms;al;al=na){
-		na=al->next;
-		a=al->alarm;
+	paa=NULL;
+	for(aal=t->active_alarms;aal;aal=naa){
+		naa=aal->next;
+		a=aal->alarm;
 		if (a->type==AL_DOWN){
 			t->upsent=0;
 			avg_loss=0;
@@ -565,7 +572,7 @@ struct alarm_cfg *a;
 void configure_targets(void){
 struct target *t,*pt,*nt;
 struct target_cfg *tc;
-struct alarm_list *al,*nal;
+struct active_alarm_list *al,*nal;
 union addr addr;
 int r;
 int l;
@@ -628,7 +635,7 @@ int l;
 				addr.addr.sa_family=AF_INET6;
 #endif
 			}
-			t=(struct target *)malloc(sizeof(struct target));
+			t=NEW(struct target,1);
 			memset(t,0,sizeof(struct target));
 			t->name=strdup(tc->name);
 			t->description=strdup(tc->description);
@@ -639,18 +646,18 @@ int l;
 		t->config=tc;
 		t->interval_tv.tv_usec=(tc->interval%1000)*1000;
 		t->interval_tv.tv_sec=tc->interval/1000;
-		l=sizeof(char)*(tc->avg_loss_delay_samples+tc->avg_loss_samples);
+		l=tc->avg_loss_delay_samples+tc->avg_loss_samples;
 		if (t->queue)
 			t->queue=(char *)realloc(t->queue,l);
 		else
-			t->queue=(char *)malloc(l);
+			t->queue=NEW(char,l);
 		assert(t->queue!=NULL);
 		memset(t->queue,0,l);
-		l=sizeof(double)*(tc->avg_delay_samples);
+		l=tc->avg_delay_samples;
 		if (t->rbuf)
 			t->rbuf=(double *)realloc(t->rbuf,l);
 		else
-			t->rbuf=(double *)malloc(l);
+			t->rbuf=NEW(double,l);
 		assert(t->rbuf!=NULL);
 		memset(t->rbuf,0,l);
 	}
@@ -663,7 +670,7 @@ int l;
 
 void free_targets(void){
 struct target *t,*nt;
-struct alarm_list *al,*nal;
+struct active_alarm_list *al,*nal;
 
 	/* delete all not configured targets */
 	for(t=targets;t;t=nt){
@@ -683,7 +690,7 @@ struct alarm_list *al,*nal;
 
 void reload_config(void){
 struct target *t;
-struct alarm_list *al,*an;
+struct active_alarm_list *al,*an;
 struct alarm_cfg *a;
 int r;
 	
@@ -700,7 +707,7 @@ int r;
 void write_status(void){
 FILE *f;
 struct target *t;
-struct alarm_list *al;
+struct active_alarm_list *al;
 struct alarm_cfg *a;
 time_t tm;
 
@@ -749,6 +756,7 @@ int i;
 char buf[100];	
 int downtime;
 struct alarm_list *al,*nal;
+struct active_alarm_list *aal;
 struct alarm_cfg *a;
 
 	configure_targets();
@@ -765,7 +773,7 @@ struct alarm_cfg *a;
 	if (config->status_interval){
 		gettimeofday(&cur_time,NULL);
 		tv.tv_sec=config->status_interval/1000;
-		tv.tv_usec=config->status_interval*1000;
+		tv.tv_usec=(config->status_interval%1000)*1000;
 		timeradd(&cur_time,&tv,&next_status);
 	}
 	while(!interrupted_by){
@@ -792,11 +800,28 @@ struct alarm_cfg *a;
 			}
 			if (!timerisset(&next_probe) || timercmp(&t->next_probe,&next_probe,<))
 				next_probe=t->next_probe;
+			for(aal=t->active_alarms;aal;aal=aal->next){
+				a=aal->alarm;
+				if (a->repeat_interval<=0)
+					continue;
+				if (!timercmp(&aal->next_repeat,&cur_time,<))
+					continue;
+				if (aal->num_repeats>=a->repeat_max)
+					continue;
+				aal->num_repeats++;
+				debug("Repeating reports...");
+				make_reports(t,a,1,aal->id+aal->num_repeats,aal->id);
+				tv.tv_sec=a->repeat_interval/1000;
+				tv.tv_usec=(a->repeat_interval%1000)*1000;
+				timeradd(&cur_time,&tv,&aal->next_repeat);
+				if (!timerisset(&next_probe) || timercmp(&aal->next_repeat,&next_probe,<))
+					next_probe=aal->next_repeat;
+			}
 		}
 		if (config->status_interval){
 			if (timercmp(&next_status,&cur_time,<)){
 				tv.tv_sec=config->status_interval/1000;
-				tv.tv_usec=config->status_interval*1000;
+				tv.tv_usec=(config->status_interval%1000)*1000;
 				timeradd(&cur_time,&tv,&next_status);
 				if (config->status_file) write_status();
 				status_request=0;
@@ -813,7 +838,7 @@ struct alarm_cfg *a;
 		if (delayed_reports){
 			if (!timerisset(&next_report)){
 				tv.tv_sec=delayed_reports->a->combine_interval/1000;
-				tv.tv_usec=delayed_reports->a->combine_interval*1000;
+				tv.tv_usec=(delayed_reports->a->combine_interval%1000)*1000;
 				timeradd(&delayed_reports->timestamp,&tv,&next_report);
 			}
 			if (!timerisset(&next_probe) || timercmp(&next_report,&next_probe,<))
@@ -829,6 +854,7 @@ struct alarm_cfg *a;
 			timersub(&next_probe,&cur_time,&tv);
 			timeout=tv.tv_usec/1000+tv.tv_sec*1000;
 		}
+		if (timeout>8000) raise(SIGINT);
 		debug("Polling, timeout: %5.3fs",((double)timeout)/1000);
 		poll(pfd,npfd,timeout);
 		for(i=0;i<npfd;i++){

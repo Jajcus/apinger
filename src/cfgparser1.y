@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser1.y,v 1.9 2002/07/26 08:39:12 cvs-jajcus Exp $
+ *  $Id: cfgparser1.y,v 1.10 2002/09/25 10:11:14 cvs-jajcus Exp $
  */
 
 
@@ -81,6 +81,7 @@ struct target_cfg *cur_target;
 %token COMMAND
 %token PIPE
 %token COMBINE
+%token REPEAT
 
 %token DOWN
 %token LOSS
@@ -225,6 +226,10 @@ alarmcommon: /* */
 		{ cur_alarm->pipe_off=$3; }
 	| COMBINE TIME
 		{ cur_alarm->combine_interval=$2; }
+	| REPEAT TIME INTEGER
+		{ cur_alarm->repeat_interval=$2; cur_alarm->repeat_max=$3; }
+	| REPEAT TIME
+		{ cur_alarm->combine_interval=$2; cur_alarm->repeat_max=0;}
 ;
 
 

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.15 2002/09/24 11:39:42 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.16 2002/09/25 10:11:14 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -48,7 +48,7 @@ struct config default_config={
 		{ 		/* alarm defaults */
 				AL_NONE,	/* type */
 				"default",	/* name */
-				"root",		/* mailto */
+				NULL,		/* mailto */
 				"nobody",	/* mailfrom */
 				NULL,		/* mailenvfrom */
 				"%r: %T(%t) *** %a ***", /* mailsubject */
@@ -57,6 +57,8 @@ struct config default_config={
 				NULL,		/* pipe on */
 				NULL,		/* pipe off */
 				0,		/* combine_interval */
+				0,		/* repeat_interval */
+				0,		/* repeat_max */
 				{},		/* params */
 				NULL		/* next */
 		},

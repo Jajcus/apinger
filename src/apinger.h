@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.12 2002/07/26 08:39:12 cvs-jajcus Exp $
+ *  $Id: apinger.h,v 1.13 2002/09/25 10:11:14 cvs-jajcus Exp $
  */
 
 #ifndef apinger_h
@@ -53,6 +53,15 @@ union addr {
 	struct sockaddr_in6 addr6;
 };
 
+struct active_alarm_list {
+	struct alarm_cfg *alarm;
+	struct active_alarm_list *next;
+	int id;
+	int num_repeats;
+	struct timeval next_repeat;
+};
+
+
 struct target {
 	char *name;		/* name (IP address as string) */
 	char *description;	/* description */
@@ -78,7 +87,7 @@ struct target {
 
 	struct timeval next_probe; /* time when next probe is scheduled */
 
-	struct alarm_list *active_alarms;
+	struct active_alarm_list *active_alarms;
 	struct target_cfg *config;
 	
 	struct target *next;
@@ -115,5 +124,7 @@ void main_loop(void);
 extern volatile int interrupted_by;
 extern volatile int reload_request;
 extern volatile int status_request;
+
+#define NEW(type,size) ((type *)malloc(sizeof(type)*size))
 
 #endif

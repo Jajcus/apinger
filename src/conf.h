@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.h,v 1.11 2002/09/24 11:38:50 cvs-jajcus Exp $
+ *  $Id: conf.h,v 1.12 2002/09/25 10:11:14 cvs-jajcus Exp $
  */
 
 #ifndef conf_h
@@ -29,6 +29,8 @@ void *pool_malloc(struct pool_item **pool,size_t size);
 char *pool_strdup(struct pool_item **pool,const char *str);
 void pool_free(struct pool_item **pool,void *ptr);
 void pool_clear(struct pool_item **pool);
+
+#define PNEW(pool,type,size) ((type *)pool_malloc(&pool,sizeof(type)*size))
 
 enum alarm_type {
 	AL_NONE=-1,
@@ -50,6 +52,8 @@ struct alarm_cfg {
 	char *pipe_on;
 	char *pipe_off;
 	int combine_interval;
+	int repeat_interval;
+	int repeat_max;
 	union {
 		int val;
 		struct {
@@ -63,7 +67,6 @@ struct alarm_cfg {
 struct alarm_list {
 	struct alarm_cfg *alarm;
 	struct alarm_list *next;
-	int id;
 };
 
 struct target_cfg {
