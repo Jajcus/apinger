@@ -4,6 +4,9 @@
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -28,9 +31,6 @@
 #endif
 #ifdef HAVE_ARPA_INET_H
 # include <arpa/inet.h>
-#endif
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
 #endif
 #ifdef HAVE_NETINET_ICMP6_H
 # include <netinet/icmp6.h>

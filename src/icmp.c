@@ -3,6 +3,9 @@
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -110,17 +113,17 @@ u_short in_cksum(const u_short *addr, register int len, u_short csum){
 
 void send_icmp_probe(struct target *t,struct timeval *cur_time,int seq){
 static char buf[1024];
-struct icmphdr *p=(struct icmphdr *)buf;
+struct icmp *p=(struct icmp *)buf;
 struct trace_info ti;
 int size;
 int ret;
 
 
-	p->type=ICMP_ECHO;
-	p->code=0;
-	p->checksum=0;
-	p->un.echo.sequence=seq%65536;
-	p->un.echo.id=ident;
+	p->icmp_type=ICMP_ECHO;
+	p->icmp_code=0;
+	p->icmp_cksum=0;
+	p->icmp_seq=seq%65536;
+	p->icmp_id=ident;
 
 	ti.timestamp=*cur_time;
 	ti.target_id=t;
@@ -128,7 +131,7 @@ int ret;
 	memcpy(p+1,&ti,sizeof(ti));
 	size=sizeof(*p)+sizeof(ti);
 
-	p->checksum = in_cksum((u_short *)p,size,0);
+	p->icmp_cksum = in_cksum((u_short *)p,size,0);
 	ret=sendto(icmp_sock,p,size,MSG_DONTWAIT,
 			(struct sockaddr *)&t->addr.addr4,sizeof(t->addr.addr4));
 	if (ret<0){
@@ -140,8 +143,8 @@ void recv_icmp(void){
 int len,hlen,icmplen,datalen;
 char buf[1024];
 struct sockaddr_in from;
-struct icmphdr *icmp;
-struct iphdr *ip;
+struct icmp *icmp;
+struct ip *ip;
 struct timeval time_recv;
 socklen_t sl;
 
@@ -154,19 +157,19 @@ socklen_t sl;
 		return;
 	}
 	if (len==0) return;
-	ip=(struct iphdr *)buf;
-	hlen=ip->ihl*4;
-	if (len<hlen+8 || ip->ihl<5) {
+	ip=(struct ip *)buf;
+	hlen=ip->ip_hl*4;
+	if (len<hlen+8 || ip->ip_hl<5) {
 		debug("Too short packet reveiced");
 		return;
 	}
 	icmplen=len-hlen;
-	icmp=(struct icmphdr *)(buf+hlen);
-	if (icmp->type != ICMP_ECHOREPLY){
-		debug("Other (%i) icmp type received",icmp->type);
+	icmp=(struct icmp *)(buf+hlen);
+	if (icmp->icmp_type != ICMP_ECHOREPLY){
+		debug("Other (%i) icmp type received",icmp->icmp_type);
 		return;
 	}
-	if (icmp->un.echo.id != ident){
+	if (icmp->icmp_id != ident){
 		debug("Alien echo-reply received");
 		return;
 	}
@@ -176,7 +179,7 @@ socklen_t sl;
 		debug("Packet data truncated.");
 		return;
 	}
-	analyze_reply(time_recv,icmp->un.echo.sequence,(struct trace_info*)(icmp+1));
+	analyze_reply(time_recv,icmp->icmp_seq,(struct trace_info*)(icmp+1));
 }
 
 int make_icmp_socket(void){
