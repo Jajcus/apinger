@@ -1,3 +1,4 @@
+*.tar.gz
 COPYING
 INSTALL
 Makefile
