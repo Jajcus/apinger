@@ -1,3 +1,12 @@
+2003-03-26  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* NEWS: - updates for 0.6.1
+
+	* src/apinger.conf, src/cfgparser1.y, src/cfgparser2.l, src/conf.c, src/conf.h, src/main.c:
+	- "alarms override" in target configuration for replacing the default alarm list
+
+	* src/apinger.c: - some compiler warnings removed
+
 2002-12-20  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* configure.ac: - ****  Version: 0.6  ****
