@@ -19,3 +19,5 @@ cfgtest_SOURCES = \
 		cfgparser2.l \
 		cfgtest.c \
 		conf.c 
+
+YFLAGS=-d

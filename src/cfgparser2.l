@@ -1,7 +1,7 @@
 
 %{
 #include <math.h>
-#include "cfgparser.tab.h"
+#include "cfgparser1.h"
 #include "debug.h"
 
 #define LOC yylloc.first_line=yylloc.last_line; yylloc.first_column=yylloc.last_column

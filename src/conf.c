@@ -3,7 +3,7 @@
 #include <malloc.h>
 #include <string.h>
 #include "conf.h"
-#include "cfgparser.tab.h"
+#include "cfgparser1.h"
 
 struct config * config=NULL;
 
