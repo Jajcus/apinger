@@ -1,3 +1,7 @@
+2002-10-18  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* doc/FAQ.xml, doc/Makefile.am: - documentation framework
+
 2002-10-16  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/apinger.c, src/apinger.h:
