@@ -1,3 +1,10 @@
+2002-07-23  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* patches/README, patches/apinger-0.3-beep.patch:
+	- first patch from apinger user :-)
+
+	* src/apinger.c: - bugfix (thanks to Christian W. Zuckschwerdt)
+
 2002-07-19  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* configure.ac: - ****  Version: 0.3  ****
