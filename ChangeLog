@@ -1,5 +1,7 @@
 2002-07-19  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: - ****  Version: 0.3  ****
+
 	* NEWS, TODO: - more updates
 
 	* src/apinger.c, src/apinger.conf: - s/cancelled/canceled/
