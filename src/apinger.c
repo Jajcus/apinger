@@ -108,7 +108,7 @@ char *mailto,*mailfrom,*mailenvfrom;
 	mailfrom=a->mailfrom;
 	if (mailto){
 		if (mailenvfrom){
-			snprintf(buf,1024,"/usr/lib/sendmail -f'%s'",mailenvfrom);
+			snprintf(buf,1024,"/usr/lib/sendmail -t -f'%s'",mailenvfrom);
 		}
 		else{
 			snprintf(buf,1024,"/usr/lib/sendmail");
