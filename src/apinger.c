@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.17 2002/07/18 10:07:45 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.18 2002/07/18 10:35:43 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -103,7 +103,8 @@ char *p;
 int nmacros=0;
 int i,sl,l,n;
 char **values;
-char ps[16],pr[16],al[16],ad[16];
+char ps[16],pr[16],al[16],ad[16],ts[100];
+time_t tim;
 
 	if (string==NULL || string[0]=='\000') return "";
 	for(i=0;string[i]!='\000';i++){
@@ -184,6 +185,11 @@ char ps[16],pr[16],al[16],ad[16];
 				values[n]=ad;
 			}
 			else values[n]="n/a";
+			break;
+		case 's':
+			tim=time(NULL);
+			strftime(ts,100,config->timestamp_format,localtime(&tim));
+			values[n]=ts;
 			break;
 		case '%':
 			values[n]="%";
@@ -285,18 +291,10 @@ unsigned thisid,lastid;
 			myperror("Couldn't send mail, popen:");
 			return;
 		}
-		if (on>0)
-			fprintf(p,"Subject: ALARM: %s(%s) *** %s ***\n",
-					t->config->description,t->name,a->name);
-		else if (on==0)
-			fprintf(p,"Subject: alarm cancelled: %s(%s) *** %s ***\n",
-					t->config->description,t->name,a->name);
-		else
-			fprintf(p,"Subject: alarm cancelled (config reload): %s(%s) *** %s ***\n",
-					t->config->description,t->name,a->name);
-		fprintf(p,"To: %s\n",mailto);
+		fprintf(p,"Subject: %s\n",subst_macros(a->mailsubject,t,a,on));
+		fprintf(p,"To: %s\n",subst_macros(mailto,t,a,on));
 		if (mailfrom) {
-			fprintf(p,"From: %s\n",mailfrom);
+			fprintf(p,"From: %s\n",subst_macros(mailfrom,t,a,on));
 		}
 		gethostname(buf,1024);
 		fprintf(p,"Message-Id: <apinger-%u-%s-%s-%s@%s>\n",
@@ -320,10 +318,11 @@ unsigned thisid,lastid;
 		}
 	}
 	if (a->pipe){
-		debug("Popening: %s",a->pipe);
+		command=subst_macros(a->pipe,t,a,on);
+		debug("Popening: %s",command);
 		p=popen(a->pipe,"w");
 		if (!p){
-			logit("Couldn't pipe report through %s",a->pipe);
+			logit("Couldn't pipe report through %s",command);
 			myperror("popen");
 			return;
 		}
@@ -331,12 +330,12 @@ unsigned thisid,lastid;
 		ret=pclose(p);
 		if (!WIFEXITED(ret)){
 			logit("Error while piping report.");
-			logit("command (%s) terminated abnormally.",a->pipe);
+			logit("command (%s) terminated abnormally.",command);
 			return;
 		}
 		if (WEXITSTATUS(ret)!=0){
 			logit("Error while piping report.");
-			logit("command (%s) exited with status: %i",a->pipe,WEXITSTATUS(ret));
+			logit("command (%s) exited with status: %i",command,WEXITSTATUS(ret));
 			return;
 		}
 	}

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser1.y,v 1.6 2002/07/18 09:33:06 cvs-jajcus Exp $
+ *  $Id: cfgparser1.y,v 1.7 2002/07/18 10:35:43 cvs-jajcus Exp $
  */
 
 
@@ -66,6 +66,7 @@ struct target_cfg *cur_target;
 %token GROUP
 %token PID_FILE
 %token MAILER
+%token TIMESTAMP_FORMAT
 
 %token STATUS
 %token ALARM
@@ -76,6 +77,7 @@ struct target_cfg *cur_target;
 %token MAILTO
 %token MAILFROM
 %token MAILENVFROM
+%token MAILSUBJECT
 %token COMMAND
 %token PIPE
 
@@ -117,6 +119,7 @@ config:	/* */
 	| USER string { cur_config.user=$2; }
 	| GROUP string { cur_config.group=$2; }
 	| MAILER string { cur_config.group=$2; }
+	| TIMESTAMP_FORMAT string { cur_config.timestamp_format=$2; }
 	| PID_FILE string { cur_config.group=$2; }
 	| STATUS '{' statuscfg '}'
 	| alarm 
@@ -199,6 +202,8 @@ alarmcommon: /* */
 		{ cur_alarm->mailfrom=$2; }
 	| MAILENVFROM string 
 		{ cur_alarm->mailenvfrom=$2; }
+	| MAILSUBJECT string 
+		{ cur_alarm->mailsubject=$2; }
 	| COMMAND ON string 
 		{ cur_alarm->command_on=$3; }
 	| COMMAND OFF string 

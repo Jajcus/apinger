@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.h,v 1.7 2002/07/18 10:07:46 cvs-jajcus Exp $
+ *  $Id: conf.h,v 1.8 2002/07/18 10:35:43 cvs-jajcus Exp $
  */
 
 #ifndef conf_h
@@ -44,6 +44,7 @@ struct alarm_cfg {
 	char *mailto;
 	char *mailfrom;
 	char *mailenvfrom;
+	char *mailsubject;
 	char *command_on;
 	char *command_off;
 	char *pipe;
@@ -88,6 +89,7 @@ struct config {
 	char *pid_file;
 	char *status_file;
 	int status_interval;
+	char *timestamp_format;
 };
 
 extern struct config cur_config,default_config;

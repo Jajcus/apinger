@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.11 2002/07/18 09:33:07 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.12 2002/07/18 10:35:43 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -51,6 +51,7 @@ struct config default_config={
 				"root",		/* mailto */
 				"nobody",	/* mailfrom */
 				NULL,		/* mailenvfrom */
+				"%r: %T(%t) *** %a ***", /* mailsubject */
 				NULL,		/* command on */
 				NULL,		/* command off */
 				NULL,		/* pipe */
@@ -73,7 +74,8 @@ struct config default_config={
 	"/usr/lib/sendmail -t",	/* mailer */
 	"/var/run/apinger.pid", /* pid file */
 	NULL,			/* status file */
-	0			/* status interval */
+	0,			/* status interval */
+	"%b %d %H:%M:%S"	/* timestamp format */
 };
 
 int foreground=1;
