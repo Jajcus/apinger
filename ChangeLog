@@ -1,3 +1,17 @@
+2002-12-20  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* doc/FAQ.xml: - updates
+
+	* src/apinger.c:
+	- Message-Id and References message headers generation improved, especially for
+	"combined" messages
+
+	* src/apinger.h:
+	- store alarm notification message-id instead of just numeric id
+
+	* src/rrd.c:
+	- display rrdtool input and output, when foreground and debugging is on
+
 2002-12-19  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/icmp6.c: - fix for compilation without IPv6
