@@ -1,5 +1,16 @@
 2002-07-16  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: ****  Version: 0.2  ****
+
+	* TODO: - +1
+
+	* src/main.c: - PACKAGE_VERSION macro instead of hardcoded "1.0"
+
+	* AUTHORS, NEWS, README: - Updates for version 0.2
+
+	* src/Makefile.am, src/apinger.h:
+	- use $sysconfdir instead of hardcoded /etc
+
 	* configure.ac: - Version: 0.2-test5
 
 	* src/apinger.c, src/apinger.h, src/debug.c, src/icmp.c, src/icmp6.c, src/main.c:
