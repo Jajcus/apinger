@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser1.y,v 1.10 2002/09/25 10:11:14 cvs-jajcus Exp $
+ *  $Id: cfgparser1.y,v 1.11 2002/10/01 08:14:52 cvs-jajcus Exp $
  */
 
 
@@ -67,6 +67,8 @@ struct target_cfg *cur_target;
 %token PID_FILE
 %token MAILER
 %token TIMESTAMP_FORMAT
+%token RRD
+
 
 %token STATUS
 %token ALARM
@@ -124,6 +126,7 @@ config:	/* */
 	| TIMESTAMP_FORMAT string { cur_config.timestamp_format=$2; }
 	| PID_FILE string { cur_config.group=$2; }
 	| STATUS '{' statuscfg '}'
+	| RRD INTERVAL TIME { cur_config.rrd_interval=$3; }
 	| alarm 
 	| target 
 	| config separator config
@@ -256,6 +259,8 @@ targetcfg: /* */
 		{ cur_target->avg_loss_samples=$2; }
 	| AVG_LOSS_DELAY_SAMPLES INTEGER
 		{ cur_target->avg_loss_delay_samples=$2; }
+	| RRD FILE_ STRING
+		{ cur_target->rrd_filename=$3; }
 	| targetcfg separator targetcfg
 ;
 

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.h,v 1.12 2002/09/25 10:11:14 cvs-jajcus Exp $
+ *  $Id: conf.h,v 1.13 2002/10/01 08:14:52 cvs-jajcus Exp $
  */
 
 #ifndef conf_h
@@ -76,8 +76,9 @@ struct target_cfg {
 	int avg_delay_samples;
 	int avg_loss_delay_samples;
 	int avg_loss_samples;
+	char *rrd_filename;
+
 	struct alarm_list *alarms;
-	
 	struct target_cfg *next;
 };
 
@@ -87,6 +88,7 @@ struct config {
 	struct target_cfg *targets;
 	struct alarm_cfg alarm_defaults;
 	struct target_cfg target_defaults;
+	int rrd_interval;
 	int debug;
 	char *user;
 	char *group;

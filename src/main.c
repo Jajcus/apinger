@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.16 2002/09/25 10:11:14 cvs-jajcus Exp $
+ *  $Id: main.c,v 1.17 2002/10/01 08:14:52 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -69,9 +69,11 @@ struct config default_config={
 				20,		/* avg_delay_samples */
 				5,		/* avg_loss_delay_samples */
 				50,		/* avg_loss_samples */
+				NULL,		/* rrd filename */
 
 				NULL,NULL	/* alarms, next */
 		},
+	0,			/* rrd_interval */
 	0, 			/* debug */
 	"nobody",		/* user */
 	NULL,			/* group */
