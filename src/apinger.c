@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.33 2002/10/21 12:34:12 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.34 2002/10/24 06:31:57 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -495,11 +495,11 @@ int seq;
 	else if (t->addr.addr.sa_family==AF_INET6) send_icmp6_probe(t,seq);
 #endif
 
+	i=t->last_sent%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
 	if (t->last_sent>=t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
-		i=t->last_sent%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
 		if (!t->queue[i]) t->recently_lost--;
-		t->queue[i]=0;
 	}
+	t->queue[i]=0;
 
 	if (t->last_sent>=t->config->avg_loss_delay_samples){
 		i1=(t->last_sent-t->config->avg_loss_delay_samples)
@@ -553,7 +553,7 @@ struct alarm_cfg *a;
 	debug("(avg: %4.3fms)",avg_delay);
 
 	i=ti->seq%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
-	if (!t->queue[i] && ti->seq<t->last_sent-t->config->avg_loss_delay_samples)
+	if (!t->queue[i] && ti->seq<=t->last_sent-t->config->avg_loss_delay_samples)
 		t->recently_lost--;
 	t->queue[i]=1;
 	
