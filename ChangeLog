@@ -1,3 +1,12 @@
+2002-10-01  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* src/cfgparser1.y, src/cfgparser2.l, src/conf.h, src/main.c:
+	- rrd configuration
+
+	* src/apinger.h: - interval_tv removed
+
+	* src/apinger.c: - new function for scheduling regular events
+
 2002-09-26  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* NEWS: - updated for 0.4.1
