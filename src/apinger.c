@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.30 2002/10/04 13:39:01 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.31 2002/10/14 10:23:34 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -204,7 +204,7 @@ time_t tim;
 			break;
 		case 'd':
 			if (t->upsent > t->config->avg_delay_samples){
-				sprintf(ad,"%0.2fms",t->delay_sum/t->config->avg_delay_samples);
+				sprintf(ad,"%0.3fms",t->delay_sum/t->config->avg_delay_samples);
 				values[n]=ad;
 			}
 			else values[n]="n/a";
@@ -267,7 +267,7 @@ time_t tm;
 	fprintf(f,"Last reply received: #%i %s",t->last_received,
 			ctime(&t->last_received_tv.tv_sec));
 	if (t->received>=t->config->avg_delay_samples){
-		fprintf(f,"Recent avg. delay: %4.2fms\n",
+		fprintf(f,"Recent avg. delay: %4.3fms\n",
 				t->delay_sum/t->config->avg_delay_samples);
 	}
 	if (t->upsent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){
@@ -541,7 +541,7 @@ struct alarm_cfg *a;
 	t->last_received_tv=time_recv;
 	timersub(&time_recv,&ti->timestamp,&tv);
 	delay=tv.tv_sec*1000.0+((double)tv.tv_usec)/1000.0;
-	debug("#%i from %s(%s) delay: %4.2fms",ti->seq,t->description,t->name,delay);
+	debug("#%i from %s(%s) delay: %4.3fms",ti->seq,t->description,t->name,delay);
 	if (t->received>t->config->avg_delay_samples)
 		tmp=t->rbuf[t->received%t->config->avg_delay_samples];
 	else
@@ -554,7 +554,7 @@ struct alarm_cfg *a;
 		avg_delay=t->delay_sum/t->config->avg_delay_samples;
 	}
 	else avg_delay=t->delay_sum/t->received;
-	debug("(avg: %4.2fms)",avg_delay);
+	debug("(avg: %4.3fms)",avg_delay);
 
 	i=ti->seq%(t->config->avg_loss_delay_samples+t->config->avg_loss_samples);
 	if (!t->queue[i] && ti->seq<t->last_sent-t->config->avg_loss_delay_samples)
@@ -756,7 +756,7 @@ time_t tm;
 		fprintf(f,"Target: %s\n",t->name);
 		fprintf(f,"Description: %s\n",t->description);
 		if (t->received>=t->config->avg_delay_samples){
-			fprintf(f,"Average delay: %0.2fms\n",
+			fprintf(f,"Average delay: %0.3fms\n",
 				t->delay_sum/t->config->avg_delay_samples);
 		}
 		if (t->upsent>t->config->avg_loss_delay_samples+t->config->avg_loss_samples){

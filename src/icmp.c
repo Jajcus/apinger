@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: icmp.c,v 1.11 2002/10/04 13:39:01 cvs-jajcus Exp $
+ *  $Id: icmp.c,v 1.12 2002/10/14 10:23:34 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -47,6 +47,15 @@
 #endif
 #ifdef HAVE_SCHED_H
 # include <sched.h>
+#endif
+#ifdef HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_UIO_H
+# include <sys/uio.h>
 #endif
 #include "debug.h"
 
@@ -156,17 +165,55 @@ struct sockaddr_in from;
 struct icmp *icmp;
 struct ip *ip;
 struct timeval time_recv;
+struct timeval *time_recvp=NULL;
+#ifdef HAVE_RECVMSG
+char ans_data[4096];
+struct iovec iov;
+struct msghdr msg;
+struct cmsghdr *c;
+
+	iov.iov_base=buf;
+	iov.iov_len=1000;
+	msg.msg_name=&from;
+	msg.msg_namelen=sizeof(from);
+	msg.msg_iov=&iov;
+	msg.msg_iovlen=1;
+	msg.msg_control=ans_data;
+	msg.msg_controllen=sizeof(ans_data);
+	len=recvmsg(icmp_sock, &msg, MSG_DONTWAIT);
+#else
 socklen_t sl;
 
 	sl=sizeof(from);
-	gettimeofday(&time_recv,NULL);
 	len=recvfrom(icmp_sock,buf,1024,MSG_DONTWAIT,(struct sockaddr *)&from,&sl);
+#endif
 	if (len<0){
 		if (errno==EAGAIN) return;
 		myperror("recvfrom");
 		return;
 	}
 	if (len==0) return;
+#if defined(HAVE_RECVMSG) && defined(SO_TIMESTAMP)
+	debug("checking CMSG...");
+	for (c = CMSG_FIRSTHDR(&msg); c; c = CMSG_NXTHDR(&msg, c)) {
+		debug("CMSG level: %i type: %i",c->cmsg_level,c->cmsg_type);
+		if (c->cmsg_level != SOL_SOCKET || c->cmsg_type != SO_TIMESTAMP)
+			continue;
+		if (c->cmsg_len < CMSG_LEN(sizeof(struct timeval)))
+			continue;
+		time_recvp = (struct timeval*)CMSG_DATA(c);
+		debug("Got timestampt from CMSG");
+	}
+#endif
+	if (time_recvp==NULL){
+#ifdef SIOCGSTAMP
+		if (!ioctl(icmp_sock, SIOCGSTAMP, &time_recv)){
+			debug("Got timestampt from ioctl()");
+		}else
+#endif
+			gettimeofday(&time_recv,NULL);
+		time_recvp=&time_recv;
+	}
 	ip=(struct ip *)buf;
 	hlen=ip->ip_hl*4;
 	if (len<hlen+8 || ip->ip_hl<5) {
@@ -190,17 +237,25 @@ socklen_t sl;
 		return;
 	}
 #ifdef FORKED_RECEIVER
-	pipe_reply(time_recv,icmp->icmp_seq,(struct trace_info*)(icmp+1));
+	pipe_reply(*time_recvp,icmp->icmp_seq,(struct trace_info*)(icmp+1));
 #else
-	analyze_reply(time_recv,icmp->icmp_seq,(struct trace_info*)(icmp+1));
+	analyze_reply(*time_recvp,icmp->icmp_seq,(struct trace_info*)(icmp+1));
 #endif
 }
 
 int make_icmp_socket(void){
+int on;
 
 	icmp_sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (icmp_sock<0)
 		myperror("socket");
+#ifdef SO_TIMESTAMP
+	else{
+		on=1;
+		if (setsockopt(icmp_sock, SOL_SOCKET, SO_TIMESTAMP, &on, sizeof(on)))
+			myperror("setsockopt(SO_TIMESTAMP)");
+	}
+#endif
 	return icmp_sock;
 }
 
