@@ -1,3 +1,12 @@
+2002-07-16  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
+
+	* configure.ac: - version test2
+
+	* src/apinger.c, src/tv_macros.h:
+	- timer* macros for timeval operations to use if they are not defined in sys/time.h
+
+	* src/main.c: - include <sys/types.h> before <unistd.h>
+
 2002-07-15  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
 	* src/apinger.c, src/icmp.c, src/icmp6.c, acinclude.m4:
