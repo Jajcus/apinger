@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.18 2002/07/18 10:35:43 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.19 2002/07/18 12:32:30 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -317,10 +317,12 @@ unsigned thisid,lastid;
 			return;
 		}
 	}
-	if (a->pipe){
-		command=subst_macros(a->pipe,t,a,on);
+	if (on>0) command=a->pipe_on;
+	else command=a->pipe_off;
+	if (command){
+		command=subst_macros(command,t,a,on);
 		debug("Popening: %s",command);
-		p=popen(a->pipe,"w");
+		p=popen(command,"w");
 		if (!p){
 			logit("Couldn't pipe report through %s",command);
 			myperror("popen");
@@ -339,7 +341,7 @@ unsigned thisid,lastid;
 			return;
 		}
 	}
-	if (on>1) command=a->command_on;
+	if (on>0) command=a->command_on;
 	else command=a->command_off;
 	if (command){
 		command=subst_macros(command,t,a,on);

@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgparser1.y,v 1.7 2002/07/18 10:35:43 cvs-jajcus Exp $
+ *  $Id: cfgparser1.y,v 1.8 2002/07/18 12:32:30 cvs-jajcus Exp $
  */
 
 
@@ -204,12 +204,25 @@ alarmcommon: /* */
 		{ cur_alarm->mailenvfrom=$2; }
 	| MAILSUBJECT string 
 		{ cur_alarm->mailsubject=$2; }
+	| COMMAND string 
+		{ 
+			if (cur_alarm->command_on==NULL) cur_alarm->command_on=$2; 
+			if (cur_alarm->command_off==NULL) cur_alarm->command_off=$2; 
+		}
 	| COMMAND ON string 
 		{ cur_alarm->command_on=$3; }
 	| COMMAND OFF string 
 		{ cur_alarm->command_off=$3; }
 	| PIPE string 
-		{ cur_alarm->pipe=$2; }
+		{ 
+			if (cur_alarm->pipe_on==NULL) cur_alarm->pipe_on=$2; 
+			if (cur_alarm->pipe_off==NULL) cur_alarm->pipe_off=$2; 
+		}
+	| PIPE ON string 
+		{ cur_alarm->pipe_on=$3; }
+	| PIPE OFF string 
+		{ cur_alarm->pipe_off=$3; }
+
 ;
 
 

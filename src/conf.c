@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: conf.c,v 1.8 2002/07/18 10:35:43 cvs-jajcus Exp $
+ *  $Id: conf.c,v 1.9 2002/07/18 12:32:30 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -160,12 +160,14 @@ int ret;
 				a->mailenvfrom=cur_config.alarm_defaults.mailenvfrom;
 			if (a->mailsubject==NULL)
 				a->mailsubject=cur_config.alarm_defaults.mailsubject;
-			if (a->pipe==NULL)
-				a->pipe=cur_config.alarm_defaults.pipe;
 			if (a->command_on==NULL)
 				a->command_on=cur_config.alarm_defaults.command_on;
 			if (a->command_off==NULL)
 				a->command_off=cur_config.alarm_defaults.command_off;
+			if (a->pipe_on==NULL)
+				a->pipe_on=cur_config.alarm_defaults.pipe_on;
+			if (a->pipe_off==NULL)
+				a->pipe_off=cur_config.alarm_defaults.pipe_off;
 		}
 		for(t=cur_config.targets;t;t=t->next){
 			if (t->description==NULL)
