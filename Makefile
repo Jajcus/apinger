@@ -1,6 +1,6 @@
 
-CFLAGS=-g -Wall `glib-config --cflags`
-LIBS=`glib-config --libs` -lefence
+CFLAGS=-g -Wall
+LIBS=
 LDFLAGS=
 
 SOURCES=pinger.c
