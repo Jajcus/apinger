@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.c,v 1.19 2002/07/18 12:32:30 cvs-jajcus Exp $
+ *  $Id: apinger.c,v 1.20 2002/07/18 13:25:54 cvs-jajcus Exp $
  */
 
 #include "config.h"
@@ -590,6 +590,7 @@ FILE *f;
 struct target *t;
 struct alarm_list *al;
 struct alarm_cfg *a;
+time_t tm;
 
 	if (config->status_file==NULL) return;
 	
@@ -599,6 +600,8 @@ struct alarm_cfg *a;
 		myperror(config->status_file);
 		return;
 	}
+	tm=time(NULL);
+	fprintf(f,"%s\n",ctime(&tm));
 	for(t=targets;t;t=t->next){
 		fprintf(f,"Target: %s\n",t->name);
 		fprintf(f,"Description: %s\n",t->config->description);
