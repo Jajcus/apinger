@@ -1,5 +1,7 @@
 2002-07-15  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: - verison changed to "0.2-test"
+
 	* Makefile.am: - BUGS file added
 
 	* BUGS, TODO: - separate file for bugs
