@@ -1,5 +1,13 @@
 2002-07-16  CVS/Jacek Konieczny  <cvs-jajcus@bnet.pl>
 
+	* configure.ac: - Version: 0.2-test5
+
+	* src/apinger.c, src/apinger.h, src/debug.c, src/icmp.c, src/icmp6.c, src/main.c:
+	- include from "apinger.h" all headers needed there, and do not include them in
+	files including "apinger.h"
+
+	* src/apinger.h: - include <socket.h> for struct sockaddr
+
 	* configure.ac: - Version: 0.2-test4
 
 	* src/apinger.c, src/icmp.c:
