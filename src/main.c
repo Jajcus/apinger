@@ -1,11 +1,9 @@
 #include "config.h"
+#include "apinger.h"
 
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
-#endif
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
 #endif
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
@@ -20,7 +18,6 @@
 # include <grp.h>
 #endif
 
-#include "apinger.h"
 #include "conf.h"
 #include "debug.h"
 

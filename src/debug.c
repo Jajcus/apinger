@@ -1,4 +1,6 @@
 #include "config.h"
+#include "apinger.h"
+
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
@@ -12,14 +14,10 @@
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
-#ifdef HAVE_TIME_H
-# include <time.h>
-#endif
 #ifdef HAVE_STDARG_H
 # include <stdarg.h>
 #endif
 
-#include "apinger.h"
 
 void logit(const char *format, ...){
 va_list args;

@@ -1,11 +1,9 @@
 #include "config.h"
+#include "apinger.h"
 
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
-#endif
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
 #endif
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
@@ -13,34 +11,16 @@
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif
-#if TIME_WITH_SYS_TIME
-# include <time.h>
-# include <sys/time.h>
-#else
-#  ifdef HAVE_SYS_TIME_H
-#   include <sys/time.h>
-#  else
-#   include <time.h>
-#  endif
-#endif
 #ifdef HAVE_SYS_WAIT_H
 # include <sys/wait.h>
 #endif
 #ifdef HAVE_SYS_POLL_H
 # include <sys/poll.h>
 #endif
-#ifdef HAVE_SYS_SOCKET_H
-# include <sys/socket.h>
-#endif
-#ifdef HAVE_NETINET_IN_H
-# include <netinet/in.h>
-#endif
 #ifdef HAVE_ARPA_INET_H
 # include <arpa/inet.h>
 #endif
 
-#include "apinger.h"
-#include "conf.h"
 #include "debug.h"
 #include "tv_macros.h"
 

@@ -1,33 +1,13 @@
 #include "config.h"
+
 #ifdef HAVE_IPV6
+#include "apinger.h"
 
 #ifdef HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
-#endif
-#if TIME_WITH_SYS_TIME
-# include <time.h>
-# include <sys/time.h>
-#else
-#  ifdef HAVE_SYS_TIME_H
-#   include <sys/time.h>
-#  else
-#   include <time.h>
-#  endif
-#endif
-#ifdef HAVE_SYS_SOCKET_H
-# include <sys/socket.h>
-#endif
-#ifdef HAVE_NETINET_IN_SYSTM_H
-# include <netinet/in_systm.h>
-#endif
-#ifdef HAVE_NETINET_IN_H
-# include <netinet/in.h>
 #endif
 #ifdef HAVE_ARPA_INET_H
 # include <arpa/inet.h>
@@ -41,7 +21,6 @@
 #ifdef HAVE_ERRNO_H
 # include <errno.h>
 #endif
-#include "apinger.h"
 #include "debug.h"
 
 #ifdef HAVE_LINUX_FILTER_H
