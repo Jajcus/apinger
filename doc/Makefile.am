@@ -5,6 +5,9 @@ dist_noinst_DATA=FAQ.html
 EXTRA_DIST=FAQ.xml
 CLEANFILES=*.aux *.dvi *.fo *.log *.out
 MAINTAINERCLEANFILES=FAQ.html FAQ.pdf FAQ.ps
+STYLESHEET_DIR=/usr/share/sgml/docbook/xsl-stylesheets
+HTML_STYLESHEET=$(STYLESHEET_DIR)/html/docbook.xsl
+FO_STYLESHEET=$(STYLESHEET_DIR)/fo/docbook.xsl
 
 SUFFIXES=.xml .fo .dvi .html .ps .pdf
 .PHONY: validate
@@ -19,10 +22,10 @@ SUFFIXES=.xml .fo .dvi .html .ps .pdf
 	dvips -o $@ $<
 
 .xml.html:
-	xsltproc --docbook -o $@ /usr/share/sgml/docbook/xsl-stylesheets/html/docbook.xsl $<
+	xsltproc -o $@ $(HTML_STYLESHEET) $<
 
 .xml.fo:
-	xsltproc --docbook -o $@ /usr/share/sgml/docbook/xsl-stylesheets/fo/docbook.xsl $<
+	xsltproc -o $@ $(FO_STYLESHEET) $<
 
 validate:
 	xmllint --valid --noout *.xml
