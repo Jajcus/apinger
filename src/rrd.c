@@ -142,7 +142,7 @@ int ret;
 		if (rrdtool_pipe==NULL) 
 			if (rrd_init()) return;
 		filename=subst_macros(t->config->rrd_filename,t,NULL,0);
-		ret=rrd_write("update %s -t loss:delay N",filename);
+		ret=rrd_write("update %s -t loss:delay %li",filename,(long)time(NULL));
 		if (ret>0){
 			if (t->upsent > t->config->avg_loss_delay_samples
 						+t->config->avg_loss_samples){
