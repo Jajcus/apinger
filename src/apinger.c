@@ -586,7 +586,7 @@ struct alarm_cfg *a;
 	timersub(&time_recv,&ti->timestamp,&tv);
 	delay=tv.tv_sec*1000.0+((double)tv.tv_usec)/1000.0;
 	debug("#%i from %s(%s) delay: %4.3fms",ti->seq,t->description,t->name,delay);
-	if (t->received>t->config->avg_delay_samples)
+	if (t->received >= t->config->avg_delay_samples)
 		tmp=t->rbuf[t->received%t->config->avg_delay_samples];
 	else
 		tmp=0;
