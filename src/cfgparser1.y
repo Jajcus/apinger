@@ -262,7 +262,7 @@ targetcfg: /* */
 		{ cur_target->avg_loss_samples=$2; }
 	| AVG_LOSS_DELAY_SAMPLES INTEGER
 		{ cur_target->avg_loss_delay_samples=$2; }
-	| RRD FILE_ STRING
+	| RRD FILE_ string
 		{ cur_target->rrd_filename=$3; }
 	| targetcfg separator targetcfg
 ;
