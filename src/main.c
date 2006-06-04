@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: main.c,v 1.21 2003/03/26 11:27:47 cvs-jajcus Exp $
+ *  $Id$
  */
 
 #include "config.h"

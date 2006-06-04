@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: rrd.h,v 1.2 2002/10/16 08:19:38 cvs-jajcus Exp $
+ *  $Id$
  */
 
 #ifndef rrd_h

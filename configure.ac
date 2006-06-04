@@ -1,4 +1,4 @@
-# $Id: configure.ac,v 1.26 2003/03/26 11:37:16 cvs-jajcus Exp $
+# $Id$
 
 # Process this file with autoconf to produce a configure script.
 AC_INIT([apinger], [0.6.1], [jajcus@jajcus.net])

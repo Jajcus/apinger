@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: icmp6.c,v 1.13 2002/12/19 08:34:16 cvs-jajcus Exp $
+ *  $Id$
  */
 
 #include "config.h"

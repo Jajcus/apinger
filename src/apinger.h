@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: apinger.h,v 1.19 2002/12/20 09:19:57 cvs-jajcus Exp $
+ *  $Id$
  */
 
 #ifndef apinger_h

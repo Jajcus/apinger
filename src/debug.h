@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: debug.h,v 1.3 2002/07/17 09:32:51 cvs-jajcus Exp $
+ *  $Id$
  */
 
 #ifndef debug_h

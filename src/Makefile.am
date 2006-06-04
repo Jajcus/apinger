@@ -1,4 +1,4 @@
-# $Id: Makefile.am,v 1.12 2003/03/26 11:34:06 cvs-jajcus Exp $
+# $Id$
 
 EXTRA_DIST = cfgparser1.h apinger.conf
 EXTRA_PROGRAMS = cfgtest

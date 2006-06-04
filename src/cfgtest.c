@@ -15,7 +15,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307
  *  USA
  *
- *  $Id: cfgtest.c,v 1.5 2002/07/17 09:32:51 cvs-jajcus Exp $
+ *  $Id$
  */
 
 #ifdef HAVE_STDLIB_H
