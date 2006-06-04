@@ -1,5 +1,5 @@
 /*
- *  Alarm Pinger (c) 2002 Jacek Konieczny <jajcus@pld.org.pl>
+ *  Alarm Pinger (c) 2002 Jacek Konieczny <jajcus@jajcus.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2 as published
@@ -139,7 +139,7 @@ int pid, status, serrno;
 #endif
 
 void usage(const char *name){
-	fprintf(stderr,"Alarm Pinger " PACKAGE_VERSION " (c) 2002 Jacek Konieczny <jajcus@pld.org.pl>\n");
+	fprintf(stderr,"Alarm Pinger " PACKAGE_VERSION " (c) 2002 Jacek Konieczny <jajcus@jajcus.net>\n");
 	fprintf(stderr,"Usage:\n");
 	fprintf(stderr,"\t%s [-c <file>] [-f] [-d]\n",name);
 	fprintf(stderr,"\t%s [-c <file>] -g <dir> [-l <location>]\n",name);
