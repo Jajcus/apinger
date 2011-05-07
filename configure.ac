@@ -1,4 +1,3 @@
-# $Id$
 
 # Process this file with autoconf to produce a configure script.
 AC_INIT([apinger], [0.6.1], [jajcus@jajcus.net])

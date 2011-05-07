@@ -1,4 +1,3 @@
-# $Id$
 
 EXTRA_DIST = cfgparser1.h apinger.conf
 EXTRA_PROGRAMS = cfgtest

@@ -4,4 +4,3 @@
 - dependency between targets (eg. don't report "down" alarm on server, when router is down)
 
 --
-$Id$
