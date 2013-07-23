@@ -1063,7 +1063,7 @@ struct piped_info pi;
 		if (status_request){
 			status_request=0;
 			if (config->status_file){
-				logit("SIGUSR1 received, writting status.");
+				logit("SIGUSR1 received, writing status.");
 				write_status();
 			}
 		}
