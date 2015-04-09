@@ -38,9 +38,7 @@ AC_CHECK_MEMBERS([struct ip.ip_hl],[],
 		[$jk_inet_includes
 $jk_icmp_includes])
 
-AC_CHECK_MEMBERS([struct icmp.icmp_type, struct icmp.icmp_code,\
-struct icmp.icmp_cksum, struct icmp.icmp_seq,\
-struct icmp.icmp_id],[],
+AC_CHECK_MEMBERS([struct icmp.icmp_type, struct icmp.icmp_code,struct icmp.icmp_cksum, struct icmp.icmp_seq,struct icmp.icmp_id],[],
 		AC_MSG_ERROR(struct icmp not defined or not compatible),
 		[$jk_inet_includes
 $jk_icmp_includes])
