@@ -111,7 +111,7 @@ struct piped_info {
 };
 #endif
 
-struct target *targets;
+extern struct target *targets;
 
 extern int foreground;
 extern char *config_file;
